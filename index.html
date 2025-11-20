@@ -391,8 +391,8 @@
         const V = (k) => getVal(k);
 
         let text = `MOTOR FUNCTION\n`;
-        text += `Brunnstrom stage:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
-        text += `${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
+        text += `Brunnstrom stage:  \n`;
+        text += `    ${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
         
         text += `Modified Rankin Scale:  ${V('mrs')}\n`;
         text += `  Muscle appearance: Atrophy${V('btn_atrophy')}, Fasciculation${V('btn_fasc')}\n`;
@@ -400,17 +400,17 @@
         // MP Grid - Spacing is key
         text += `  M.P.:(0-5)           R't         L't     \n`;
         text += `  upper    proximal     ${V('mp_ur')}           ${V('mp_ul')}\n`;
-        text += `           distal       ${V('mp_u_dist_r')}           ${V('mp_u_dist_l')}\n`;
+        text += `                      distal     ${V('mp_u_dist_r')}           ${V('mp_u_dist_l')}\n`;
         text += `  lower    proximal     ${V('mp_lr')}           ${V('mp_ll')}\n`;
-        text += `           distal       ${V('mp_l_dist_r')}           ${V('mp_l_dist_l')}\n`;
+        text += `                      distal     ${V('mp_l_dist_r')}           ${V('mp_l_dist_l')}\n`;
         
         // DTR Grid
         text += `  DTR: (0-++++)         R't        L't\n`;
-        text += `     Biceps reflex      ${V('dtr_0_r')}         ${V('dtr_0_l')}\n`;
-        text += `     Triceps            ${V('dtr_1_r')}         ${V('dtr_1_l')}\n`;
-        text += `     Brachiaradialis    ${V('dtr_2_r')}         ${V('dtr_2_l')}\n`;
-        text += `     Knee jerk          ${V('dtr_3_r')}         ${V('dtr_3_l')}\n`;
-        text += `     Ankle jerk         ${V('dtr_4_r')}         ${V('dtr_4_l')}\n`;
+        text += `     Biceps reflex        ${V('dtr_0_r')}         ${V('dtr_0_l')}\n`;
+        text += `     Triceps                  ${V('dtr_1_r')}         ${V('dtr_1_l')}\n`;
+        text += `     Brachiaradialis     ${V('dtr_2_r')}         ${V('dtr_2_l')}\n`;
+        text += `     Knee jerk               ${V('dtr_3_r')}         ${V('dtr_3_l')}\n`;
+        text += `     Ankle jerk            ${V('dtr_4_r')}         ${V('dtr_4_l')}\n`;
         
         text += ` Babinski's sign: ${V('bab_r')} / ${V('bab_l')}\n`;
         text += ` Hoffman sign: ${V('hof_r')}/${V('hof_l')}\n`;
