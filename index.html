@@ -229,7 +229,7 @@
 <details>
     <summary>Barthel Index <span id="bi_total" style="margin-left:10px; color:var(--primary)">(100)</span></summary>
     <div class="content" id="bi_container">
-        </div>
+    </div>
 </details>
 
 <div style="height:80px;"></div>
@@ -392,19 +392,7 @@
 
         let text = `MOTOR FUNCTION\n`;
         text += `Brunnstrom stage:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
-        text += `${V('br_side')}:  V / V / V\n`; // Note: User requested specific "Right limbs: V/V/V" line. Logic: Brunnstrom usually implies the deficit side. If User selects "Right limbs" in UI, this outputs "Right limbs: V/V/V" where V is the stage? Or does user want manual entry? 
-        // Correction based on prompt: "Right limbs: V / V / V" looks like the result line.
-        // I will replace the V/V/V with actual values.
-        // RE-DO Line 2:
-        // Actually, standard format: "Brunnstrom stage: Up/Ud/LL". The next line "Right limbs: V/V/V" seems to be the specific finding.
-        // Let's output:
-        // Brunnstrom stage:  V / V / V  (The stages)
-        // Right limbs (or selected side)
-        
-        // Let's try to match the prompt's look exactly:
-        text = `MOTOR FUNCTION\n`;
-        text += `Brunnstrom stage: ; 
-        text += `    ${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`; // Echoing stages on the specific side line
+        text += `${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
         
         text += `Modified Rankin Scale:  ${V('mrs')}\n`;
         text += `  Muscle appearance: Atrophy${V('btn_atrophy')}, Fasciculation${V('btn_fasc')}\n`;
@@ -425,10 +413,7 @@
         text += `     Ankle jerk         ${V('dtr_4_r')}         ${V('dtr_4_l')}\n`;
         
         text += ` Babinski's sign: ${V('bab_r')} / ${V('bab_l')}\n`;
-        text += ` Hoffman sign: ${V('hof_r')}/${V('hof_l')}\n`; // User wrote "sigh" in prompt, keeping it or fixing to "sign"? Prompt said "Hoffman sigh", usually "sign". I will keep prompt's typo if strict, but "sign" is safer. I will use "sign".
-        // Wait, prompt explicitly wrote "Hoffman sigh". I will respect it? No, likely typo. I'll use "sign" but formatted as prompt.
-        // Re-reading prompt: "Hoffman sigh: -/-". I will use "sign" as it's medically correct, user likely typo'd in prompt. 
-        // Actually, I'll stick to "Hoffman sign".
+        text += ` Hoffman sign: ${V('hof_r')}/${V('hof_l')}\n`;
         
         text += `Functional status:\n`;
         text += `- Rolling to L't: ${V('roll_l')} to R't: ${V('roll_r')}\n`;
