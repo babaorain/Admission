@@ -130,20 +130,20 @@
 
         <div class="sec-label">Upper Distal</div>
         <div class="grid-2">
-            <select id="mp_u_dist_r" onchange="save()"><option value="5" selected>5 (Rt)</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-            <select id="mp_u_dist_l" onchange="save()"><option value="5" selected>5 (Lt)</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
+            <select id="mp_u_dist_r" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
+            <select id="mp_u_dist_l" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
         </div>
 
         <div class="sec-label">Lower Proximal</div>
         <div class="grid-2">
-             <select id="mp_lr" onchange="save()"><option value="5" selected>5 (Rt)</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-             <select id="mp_ll" onchange="save()"><option value="5" selected>5 (Lt)</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
+             <select id="mp_lr" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
+             <select id="mp_ll" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
         </div>
 
         <div class="sec-label">Lower Distal</div>
         <div class="grid-2">
-             <select id="mp_l_dist_r" onchange="save()"><option value="5" selected>5 (Rt)</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-             <select id="mp_l_dist_l" onchange="save()"><option value="5" selected>5 (Lt)</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
+             <select id="mp_l_dist_r" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
+             <select id="mp_l_dist_l" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
         </div>
     </div>
 </details>
@@ -403,8 +403,8 @@
         
         // Let's try to match the prompt's look exactly:
         text = `MOTOR FUNCTION\n`;
-        text += `Brunnstrom stage:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
-        text += `${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`; // Echoing stages on the specific side line
+        text += `Brunnstrom stage:  
+        text += `    ${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`; // Echoing stages on the specific side line
         
         text += `Modified Rankin Scale:  ${V('mrs')}\n`;
         text += `  Muscle appearance: Atrophy${V('btn_atrophy')}, Fasciculation${V('btn_fasc')}\n`;
