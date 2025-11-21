@@ -5,450 +5,937 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Rehab Admission Board</title>
     <style>
-        :root { --primary: #00796b; --bg: #f5f7f8; --text: #263238; --border: #cfd8dc; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding-bottom: 100px; color: var(--text); -webkit-tap-highlight-color: transparent; }
-        
+        :root { --primary: #00796b; --bg: #f5f7f8; --text: #263238; --border: #cfd8dc; --warn: #d32f2f; }
+        body { font-family: "Courier New", Courier, monospace; background: var(--bg); margin: 0; padding-bottom: 120px; color: var(--text); -webkit-tap-highlight-color: transparent; }
+
         /* Sticky Header */
-        .header { background: white; padding: 10px 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .header h1 { margin: 0; font-size: 1rem; color: var(--primary); font-weight: 800; }
-        .btn-reset { background: #ffebee; color: #d32f2f; border: 1px solid #ffcdd2; padding: 6px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
+        .header { background: white; padding: 10px 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .pt-info { display: flex; gap: 10px; width: 100%; }
+        .pt-info input { flex: 1; padding: 8px; border: 1px solid #999; border-radius: 4px; font-weight: bold; }
+
+        /* Template Switcher */
+        .mode-switch { display: flex; width: 100%; border: 2px solid var(--primary); border-radius: 6px; overflow: hidden; margin-top: 5px; }
+        .mode-btn { flex: 1; padding: 8px; background: white; border: none; border-right: 1px solid var(--primary); color: var(--primary); font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .mode-btn:last-child { border-right: none; }
+        .mode-btn.active { background: var(--primary); color: white; }
 
         /* Sections */
         details { background: white; margin: 10px; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        summary { padding: 12px 15px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; background: #fff; font-size: 0.95rem; }
+        summary { padding: 12px 15px; font-weight: bold; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; background: #fff; font-size: 1rem; border-bottom: 1px solid #eee; }
         summary::-webkit-details-marker { display: none; }
-        summary:after { content: '+'; font-size: 1.2rem; color: #999; }
+        summary:after { content: '+'; font-size: 1.5rem; color: #999; }
         details[open] summary { background: #e0f2f1; color: var(--primary); border-bottom: 1px solid #b2dfdb; }
         details[open] summary:after { content: '-'; }
         .content { padding: 15px; }
 
-        /* Section Label */
-        .sec-label { font-size: 0.85rem; color: #546e7a; font-weight: 700; margin: 12px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px dashed #eee; padding-bottom: 4px; }
-        
-        /* Grid Layouts */
+        /* UI Elements */
+        .sec-label { font-size: 0.9rem; color: #455a64; font-weight: 700; margin: 15px 0 8px 0; border-bottom: 2px dashed #eee; padding-bottom: 4px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .grid-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-        .grid-row-label { font-size: 0.9rem; font-weight: 600; flex: 1; }
-        
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
+        .grid-auto { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
+
+        /* MAS Specific Layout */
+        .mas-container { display: flex; flex-direction: column; gap: 10px; }
+        .mas-side { border: 1px solid #eee; padding: 10px; border-radius: 6px; background: #fafafa; }
+        .mas-side-title { font-weight: bold; text-align: center; margin-bottom: 8px; color: var(--primary); border-bottom: 1px solid #ddd; padding-bottom: 4px;}
+        .mas-row { display: grid; grid-template-columns: 60px 1fr; align-items: center; margin-bottom: 5px; font-size: 0.9rem; }
+
+        /* ASIA / SCI Layout Fixed */
+        .asia-grid-header { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 5px; font-weight: bold; text-align: center; background: #f0f0f0; padding: 5px 0; border-radius: 4px; margin-bottom: 5px; color: var(--primary);}
+        .asia-row { display: grid; grid-template-columns: 1fr 100px 1fr; gap: 5px; align-items: center; border-bottom: 1px solid #eee; padding: 4px 0; }
+
+        .sensory-grid-header { display: grid; grid-template-columns: 40px 1fr 1fr 1fr 1fr; gap: 2px; font-weight: bold; text-align: center; background: #f0f0f0; padding: 5px 0; border-radius: 4px; margin-bottom: 5px; font-size: 0.75rem; }
+        .dermatome-grid { display: grid; grid-template-columns: 40px 1fr 1fr 1fr 1fr; gap: 2px; text-align: center; font-size: 0.75rem; align-items: center; margin-bottom: 4px; }
+
         /* Segmented Buttons */
-        .seg-group { display: flex; width: 100%; border: 1px solid var(--primary); border-radius: 6px; overflow: hidden; }
-        .seg-btn { flex: 1; padding: 8px 0; background: white; border: none; border-right: 1px solid var(--primary); color: var(--primary); font-weight: 600; cursor: pointer; font-size: 13px; transition: 0.1s; }
+        .seg-group { display: flex; width: 100%; border: 1px solid #90a4ae; border-radius: 4px; overflow: hidden; margin-bottom: 5px; }
+        .seg-btn { flex: 1; padding: 8px 2px; background: white; border: none; border-right: 1px solid #90a4ae; color: #546e7a; font-weight: 600; cursor: pointer; font-size: 12px; }
         .seg-btn:last-child { border-right: none; }
-        .seg-btn.active { background: var(--primary); color: white; }
-        .seg-btn-sm { font-size: 11px; padding: 6px 0; }
+        .seg-btn.active { background: #546e7a; color: white; }
 
-        /* Inputs & Selects */
-        select, input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white; }
-        
-        /* Toggle Switch (Checkboxes) */
-        .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .toggle-btn { padding: 6px 12px; border: 1px solid #ccc; border-radius: 20px; background: #f0f0f0; color: #666; cursor: pointer; font-size: 0.85rem; }
-        .toggle-btn.active { background: #ff9800; color: white; border-color: #f57c00; }
+        /* Calc Buttons */
+        .calc-btn { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff; margin-right: 4px; cursor: pointer; font-size: 0.9rem; font-weight: bold; color: #666; }
+        .calc-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* DTR Specific */
-        .dtr-row { display: flex; flex-direction: column; margin-bottom: 12px; background: #fafafa; padding: 8px; border-radius: 6px; }
-        .dtr-title { font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; text-align: center; color: #444; }
+        /* Inputs */
+        select, input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background: white; box-sizing: border-box; font-family: inherit; font-size: 0.9rem; }
+        .hint { font-size: 0.85rem; color: var(--primary); font-weight: normal; margin-left: 8px; font-style: italic; display: inline-block;}
+        textarea { width: 100%; border: 1px solid #ccc; border-radius: 4px; resize: vertical; font-family: monospace; white-space: pre; overflow-x: auto; }
 
-        /* Functional Status Grid */
-        .func-grid { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; margin-bottom: 8px; }
-        
+        /* Toggles */
+        .toggle-btn { padding: 5px 10px; border: 1px solid #ccc; border-radius: 15px; background: #f5f5f5; cursor: pointer; font-size: 0.8rem; margin-right: 5px; margin-bottom: 5px; display: inline-block;}
+        .toggle-btn.active { background: var(--warn); color: white; border-color: var(--warn); }
+
+        /* JOMAC Specific */
+        .jomac-row { margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #f0f0f0; }
+        .jomac-label { font-size: 0.85rem; font-weight: bold; color: #546e7a; margin-bottom: 3px; }
+        .hidden { display: none !important; }
+
         /* FAB */
-        .fab-area { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 200; }
-        .btn-copy { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; }
-        .btn-copy:active { opacity: 0.9; }
+        .fab-area { position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 15px; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 200; display: flex; gap: 10px; }
+        .btn-copy { flex: 2; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .btn-reset { flex: 1; background: #eceff1; color: #455a64; border: 1px solid #cfd8dc; border-radius: 8px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <button class="btn-reset" onclick="clearData()">重置 (New Patient)</button>
-    <h1>NE & Admission Note</h1>
-    <div style="width: 30px;"></div>
+    <div class="pt-info">
+        <input type="text" id="pt_bed" placeholder="床號 Bed No." style="flex: 0.4;">
+        <input type="text" id="pt_name" placeholder="姓名 Name" style="flex: 1;">
+    </div>
+    <div class="mode-switch">
+        <button class="mode-btn active" onclick="setMode('CVA')">CVA</button>
+        <button class="mode-btn" onclick="setMode('TBI')">TBI</button>
+        <button class="mode-btn" onclick="setMode('SCI')">SCI</button>
+    </div>
 </div>
 
-<details open>
-    <summary>Neuro Status (Brunnstrom/MRS)</summary>
-    <div class="content">
-        <div class="sec-label">Brunnstrom Stage (Affected Side)</div>
-        <div class="grid-2" style="margin-bottom: 10px;">
-            <select id="br_side" onchange="save()">
-                <option value="Right limbs">Right limbs</option>
-                <option value="Left limbs">Left limbs</option>
-            </select>
-        </div>
-        
-        <div style="margin-bottom: 5px; font-size: 0.8rem;">Upper (Up)</div>
-        <div class="seg-group" data-key="br_up">
-            <button class="seg-btn" onclick="set(this)">I</button><button class="seg-btn" onclick="set(this)">II</button><button class="seg-btn" onclick="set(this)">III</button><button class="seg-btn" onclick="set(this)">IV</button><button class="seg-btn active" onclick="set(this)">V</button><button class="seg-btn" onclick="set(this)">VI</button>
-        </div>
-        
-        <div style="margin: 5px 0; font-size: 0.8rem;">Hand/Distal (Ud)</div>
-        <div class="seg-group" data-key="br_ud">
-            <button class="seg-btn" onclick="set(this)">I</button><button class="seg-btn" onclick="set(this)">II</button><button class="seg-btn" onclick="set(this)">III</button><button class="seg-btn" onclick="set(this)">IV</button><button class="seg-btn active" onclick="set(this)">V</button><button class="seg-btn" onclick="set(this)">VI</button>
-        </div>
-
-        <div style="margin: 5px 0; font-size: 0.8rem;">Lower Limb (LL)</div>
-        <div class="seg-group" data-key="br_ll">
-            <button class="seg-btn" onclick="set(this)">I</button><button class="seg-btn" onclick="set(this)">II</button><button class="seg-btn" onclick="set(this)">III</button><button class="seg-btn" onclick="set(this)">IV</button><button class="seg-btn active" onclick="set(this)">V</button><button class="seg-btn" onclick="set(this)">VI</button>
-        </div>
-
-        <div class="sec-label">Modified Rankin Scale</div>
-        <div class="seg-group" data-key="mrs">
-            <button class="seg-btn active" onclick="set(this)">0</button><button class="seg-btn" onclick="set(this)">1</button><button class="seg-btn" onclick="set(this)">2</button><button class="seg-btn" onclick="set(this)">3</button><button class="seg-btn" onclick="set(this)">4</button><button class="seg-btn" onclick="set(this)">5</button>
-        </div>
-
-        <div class="sec-label">Muscle Appearance</div>
-        <div class="toggle-row">
-            <span>Atrophy:</span>
-            <button class="toggle-btn" id="btn_atrophy" onclick="toggle(this)">(-)</button>
-        </div>
-        <div class="toggle-row">
-            <span>Fasciculation:</span>
-            <button class="toggle-btn" id="btn_fasc" onclick="toggle(this)">(-)</button>
-        </div>
-    </div>
-</details>
-
-<details>
-    <summary>Muscle Power (M.P.)</summary>
-    <div class="content">
-        <div class="sec-label">Upper Proximal</div>
-        <div class="grid-2">
-            <div>
-                <div style="text-align:center; font-size:0.8rem; color:var(--primary);">Right</div>
-                <select id="mp_ur" onchange="save()">
-                    <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="4+">4+</option><option value="5" selected>5</option>
-                </select>
-            </div>
-            <div>
-                <div style="text-align:center; font-size:0.8rem; color:var(--primary);">Left</div>
-                <select id="mp_ul" onchange="save()">
-                    <option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="sec-label">Upper Distal</div>
-        <div class="grid-2">
-            <select id="mp_u_dist_r" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-            <select id="mp_u_dist_l" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-        </div>
-
-        <div class="sec-label">Lower Proximal</div>
-        <div class="grid-2">
-             <select id="mp_lr" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-             <select id="mp_ll" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-        </div>
-
-        <div class="sec-label">Lower Distal</div>
-        <div class="grid-2">
-             <select id="mp_l_dist_r" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-             <select id="mp_l_dist_l" onchange="save()"><option value="5" selected>5</option><option value="4+">4+</option><option value="4">4</option><option value="3">3</option><option value="2">2</option><option value="1">1</option><option value="0">0</option></select>
-        </div>
-    </div>
-</details>
-
-<details>
-    <summary>DTR & Reflexes</summary>
-    <div class="content">
-        <div class="sec-label">Deep Tendon Reflexes (0-++++)</div>
-        
-        <div id="dtr_container"></div>
-
-        <div class="sec-label">Pathological Reflexes</div>
-        
-        <div style="margin-bottom:5px; font-weight:bold;">Babinski's sign</div>
-        <div class="grid-2">
-            <select id="bab_r" onchange="save()">
-                <option value="plantar flexion">Rt: Plantar Flex</option>
-                <option value="dorsiflexion">Rt: Dorsiflexion</option>
-                <option value="mute">Rt: Mute</option>
-            </select>
-            <select id="bab_l" onchange="save()">
-                <option value="plantar flexion">Lt: Plantar Flex</option>
-                <option value="dorsiflexion">Lt: Dorsiflexion</option>
-                <option value="mute">Lt: Mute</option>
-            </select>
-        </div>
-
-        <div style="margin:10px 0 5px 0; font-weight:bold;">Hoffman sign</div>
-        <div class="grid-2">
-            <div class="seg-group" data-key="hof_r">
-                <button class="seg-btn" onclick="set(this)">+</button>
-                <button class="seg-btn active" onclick="set(this)">-</button>
-            </div>
-             <div class="seg-group" data-key="hof_l">
-                <button class="seg-btn" onclick="set(this)">+</button>
-                <button class="seg-btn active" onclick="set(this)">-</button>
-            </div>
-        </div>
-    </div>
-</details>
-
-<details>
-    <summary>Functional & Balance</summary>
-    <div class="content">
-        <div class="sec-label">Bed Mobility / Transfer</div>
-        
-        <div class="func-grid">
-            <span>Rolling:</span>
-            <div class="grid-2">
-                <select id="roll_l" onchange="save()"><option>good</option><option>fair</option><option>poor</option><option>assist</option></select>
-                <select id="roll_r" onchange="save()"><option>good</option><option>fair</option><option>poor</option><option>assist</option></select>
-            </div>
-        </div>
-        <div class="func-grid">
-            <span>Sitting up:</span>
-            <select id="sit_up" onchange="save()"><option>good</option><option>fair</option><option>poor</option><option>assist</option></select>
-        </div>
-        <div class="func-grid">
-            <span>Transfer:</span>
-            <select id="trans_func" onchange="save()"><option>good</option><option>fair</option><option>poor</option><option>assist</option></select>
-        </div>
-        <div class="func-grid">
-            <span>Standing up:</span>
-            <select id="stand_up" onchange="save()"><option>good</option><option>fair</option><option>poor</option><option>assist</option></select>
-        </div>
-
-        <div class="sec-label">Balance (Static / Dynamic)</div>
-        
-        <div style="margin-bottom:5px; font-weight:bold;">Sitting Balance</div>
-        <div class="grid-2">
-             <select id="bal_sit_s" onchange="save()"><option>good</option><option>fair</option><option>poor</option></select>
-             <select id="bal_sit_d" onchange="save()"><option>good</option><option>fair</option><option>poor</option></select>
-        </div>
-
-        <div style="margin:10px 0 5px 0; font-weight:bold;">Standing Balance</div>
-        <div class="grid-2">
-             <select id="bal_sta_s" onchange="save()"><option>good</option><option>fair</option><option>poor</option></select>
-             <select id="bal_sta_d" onchange="save()"><option>fair-good</option><option>good</option><option>fair</option><option>poor</option></select>
-        </div>
-    </div>
-</details>
-
-<details>
-    <summary>Barthel Index <span id="bi_total" style="margin-left:10px; color:var(--primary)">(100)</span></summary>
-    <div class="content" id="bi_container">
-    </div>
-</details>
-
-<div style="height:80px;"></div>
+<div id="app-container"></div>
 
 <div class="fab-area">
-    <button class="btn-copy" onclick="copyNote()">📋 Copy Note (EMR Format)</button>
+    <button class="btn-reset" onclick="clearData()">🗑 Reset</button>
+    <button class="btn-copy" onclick="copyNote()">📋 Copy Note</button>
 </div>
 
 <script>
-    // --- Config & Init ---
-    const dtrItems = ['Biceps reflex', 'Triceps', 'Brachiaradialis', 'Knee jerk', 'Ankle jerk'];
-    const dtrOpts = ['0', '+', '++', '+++', '++++'];
-    
-    const biItems = [
-        {k:'feed', t:'Feeding', m:10, o:[10,5,0]},
-        {k:'groom', t:'Grooming', m:5, o:[5,0]},
-        {k:'dress', t:'Dressing', m:10, o:[10,5,0]},
-        {k:'bath', t:'Bathing', m:5, o:[5,0]},
-        {k:'toilet', t:'Toilet', m:10, o:[10,5,0]},
-        {k:'bowel', t:'Bowel', m:10, o:[10,5,0]},
-        {k:'blad', t:'Bladder', m:10, o:[10,5,0]},
-        {k:'walk', t:'Walking', m:15, o:[15,10,5,0]},
-        {k:'trans', t:'Transfer', m:15, o:[15,10,5,0]},
-        {k:'stair', t:'Stairs', m:10, o:[10,5,0]}
+    // --- Config ---
+    let currentMode = 'CVA';
+    const mpOpts = ['5','4+','4','3','2','1','0'];
+    const reflexOpts = ['++++','+++','++','+','0'];
+    const asiaOpts = ['5','4','3','2','1','0','NT'];
+    const sensoryOpts = ['2','1','0','NT'];
+    const brOpts = ['I','II','III','IV','V','VI'];
+    const masOpts = ['0', '1', '1+', '2', '3', '4'];
+    const balOpts = ['Good', 'Fair-Good', 'Fair', 'Poor-Fair', 'Poor', 'Assist', 'Zero'];
+    const nliOpts = [];
+    ['C','T','L','S'].forEach(r => {
+        let max = r=='C'?8 : r=='T'?12 : 5;
+        for(let i=1; i<=max; i++) nliOpts.push(r+i);
+    });
+
+    const ranchoOpts = [
+        'I. No Response', 'II. Generalized Response', 'III. Localized Response',
+        'IV. Confused-Agitated', 'V. Confused-Inappropriate', 'VI. Confused-Appropriate',
+        'VII. Automatic-Appropriate', 'VIII. Purposeful-Appropriate',
+        'IX. Purposeful-Appropriate (SBA)', 'X. Purposeful-Appropriate (Mod I)'
     ];
 
-    // --- UI Generation ---
-    window.onload = () => {
-        // Gen DTR
-        const dtrDiv = document.getElementById('dtr_container');
-        dtrItems.forEach((item, idx) => {
-            const key = `dtr_${idx}`; // dtr_0_r, dtr_0_l
-            let html = `<div class="dtr-row"><div class="dtr-title">${item}</div><div class="grid-2">`;
-            // Right
-            html += `<div class="seg-group" data-key="${key}_r">`;
-            dtrOpts.forEach(o => html += `<button class="seg-btn seg-btn-sm ${o=='++'?'active':''}" onclick="set(this)">${o}</button>`);
-            html += `</div>`;
-            // Left
-            html += `<div class="seg-group" data-key="${key}_l">`;
-            dtrOpts.forEach(o => html += `<button class="seg-btn seg-btn-sm ${o=='++'?'active':''}" onclick="set(this)">${o}</button>`);
-            html += `</div></div></div>`;
-            dtrDiv.innerHTML += html;
-        });
+    const biItems = [
+        {k:'feed', t:'1. 進食 Feeding', o:[10,5,0], d:{10:'十秒吃一口，可自行進食或使用輔具進食', 5:'需要協助進食、切好食物、穿脫輔具', 0:'無法自行進食、NG'}},
+        {k:'bath', t:'2. 洗澡 Bathing', o:[5,0], d:{5:'可以獨立完成', 0:'需他人協助完成沐浴'}},
+        {k:'groom', t:'3. 個人衛生 Grooming', o:[5,0], d:{5:'可以自行刷牙、洗臉、洗手、刮鬍子', 0:'需要他人協助完成盥洗'}},
+        {k:'dress', t:'4. 穿脫衣褲鞋襪 Dressing', o:[10,5,0], d:{10:'可以獨立完成，必要時使用輔具', 5:'可以在幫助下，完成一半以上動作', 0:'完全需要他人幫助'}},
+        {k:'bowel', t:'5. 大便控制 Bowel', o:[10,5,0], d:{10:'不會失禁', 5:'偶爾失禁、每週小於1次', 0:'失禁或需要灌腸'}},
+        {k:'blad', t:'6. 小便控制 Bladder', o:[10,5,0], d:{10:'正常控制', 5:'偶爾失禁、每週小於1次', 0:'失禁或Foley'}},
+        {k:'toilet', t:'7. 如廁 Toilet', o:[10,5,0], d:{10:'可以獨立上廁所，且沒有安全上的顧慮', 5:'在協助下可以保持平衡整理衣物、或用衛生紙', 0:'完全需要他人協助'}},
+        {k:'trans', t:'8. 移位 Transfer', o:[15,10,5,0], d:{15:'可自行完成，沒有安全疑慮', 10:'在移位過程中需少量提醒，有安全疑慮', 5:'可以自行坐起，但需協助才可移位', 0:'需他人協助才可坐起，需兩人協助才能移位'}},
+        {k:'walk', t:'9. 行走 Walking', o:[15,10,5,0], d:{15:'獨立行走超過50米', 10:'需要一人幫助可行走超過50米', 5:'可以獨立推輪椅移動超過50米', 0:'無法移動或小於50米'}},
+        {k:'stair', t:'10. 上下樓梯 Stairs', o:[10,5,0], d:{10:'可以自行上下樓梯（扶手或拐杖）', 5:'需要稍微扶持、或口頭指導', 0:'無法上下樓梯'}}
+    ];
 
-        // Gen Barthel
-        const biDiv = document.getElementById('bi_container');
+    // --- Templates ---
+    function getTemplateCN() {
+        return `CRNANIAL NERVES
+ I: smell: no test
+ II: visual acuity: no test
+     visual fields: confrontation test
+                  Right         Left
+                 O │ O         O │ O
+              -----│------  -----│-----
+                 O │ O         O │ O
+ III,IV,VI: Pupil:                   Right     Left
+              Size                   2.5 mm    2.5  mm
+              Shape                  round     round
+              Direct light reflex      +         +
+              Indirect light reflex    +         +
+             EOM: free
+                0   0                 0   0
+             0--+---+--0           0--+---+--0
+                0   0                 0   0
+             Diplopia:denied       Ptosis: nil
+             Nystagmus: nil       Pursuit
+             Saccadic
+ V: Masseter and temporalis: No decreased
+     Facial sensation: V1/V2/V3: No numbness
+ VII: Wrinkle forehead: Intact
+        Forcibly close eyes: No decreased
+        Puff cheeks: Symmetric
+ VIII: hearing: Weber’s test -> No lateralization
+                 Rinne’s test -> Bilateral AC > BC
+ IX, X: uvula position: Central position. Gag reflex:(+/+)
+ XI: Sternocleidomastoid: Powerful
+     Trapezius: Powerful
+ XII: tongue deviation(-). Atrophy(-), Fibrillation(-).`;
+    }
+
+    function getTemplateSensoryDefault() {
+        return `SENSORY FUNCTION
+  Ant-lat system
+   Pin-prick: Symmetric
+   Temperature: No decreased
+  Post. column
+   Light touch: Symmetric
+   Vibration: Intact
+   Joint position: Intact
+  Two-point discrimination test:
+  Double stimulation test: No neglect
+  Stereognosis: Not done
+  Graphesthesia (+; 閉上眼在手掌寫數字3可辨認)
+  Sensory status : Anal sensation (+)`;
+    }
+
+    function getTemplateOther() {
+        return `OTHER NEUROLOGICAL FINDINGS
+[Extrapyramidal symptoms]: Rigidity(-), Tremor(-) , Bradykinesia(-), Postural areflexia(-),
+                            Blepharospasm(-), involuntary movement: nil
+[Autonomic System]:
+ Bladder: sensation(+), self-voiding(+), sphincter control(+)
+ Bowel: sensation(+), self-voiding(+), sphincter control(+)`;
+    }
+
+    // --- Render Functions ---
+
+    function render() {
+        const container = document.getElementById('app-container');
+        container.innerHTML = '';
+
+        // 1. Mental Status
+        let mentalHtml = `
+            <div class="grid-auto">
+                <span>GCS:</span>
+                <div style="display:flex; gap:5px; width:100%;">
+                    <select id="gcs_e"><option value="4">E4</option><option value="3">E3</option><option value="2">E2</option><option value="1">E1</option></select>
+                    <select id="gcs_v"><option value="5">V5</option><option value="4">V4</option><option value="3">V3</option><option value="2">V2</option><option value="1">V1</option><option value="T">Vt</option><option value="A">Va</option></select>
+                    <select id="gcs_m"><option value="6">M6</option><option value="5">M5</option><option value="4">M4</option><option value="3">M3</option><option value="2">M2</option><option value="1">M1</option></select>
+                </div>
+            </div>
+            <div class="grid-auto"><span>Handedness:</span>
+                <div class="seg-group" data-key="hand_side" style="margin:0">
+                    <button class="seg-btn active" onclick="set(this)">Right</button>
+                    <button class="seg-btn" onclick="set(this)">Left</button>
+                </div>
+            </div>
+            ${currentMode !== 'SCI' ? `
+            <div class="sec-label">Language (FRCN)</div>
+            <div class="grid-2">
+                <button class="toggle-btn active" id="lang_fluency" onclick="toggle(this)">Fluency (+)</button>
+                <button class="toggle-btn active" id="lang_rep" onclick="toggle(this)">Repetition (+)</button>
+                <button class="toggle-btn active" id="lang_comp" onclick="toggle(this)">Comprehension (+)</button>
+                <button class="toggle-btn active" id="lang_name" onclick="toggle(this)">Naming (+)</button>
+            </div>
+            <div class="sec-label">Deficits</div>
+            <div>
+                <button class="toggle-btn" id="def_dysarthria" onclick="toggle(this)">Dysarthria (-)</button>
+                <button class="toggle-btn" id="def_aphasia" onclick="toggle(this)">Aphasia (-)</button>
+                <button class="toggle-btn" id="def_dysphagia" onclick="toggle(this)">Dysphagia (-)</button>
+            </div>
+            ${renderJOMAC()}
+            ` : `
+            <div class="sec-label">Speech/Swallow</div>
+            <div>
+                <button class="toggle-btn" id="def_dysarthria" onclick="toggle(this)">Dysarthria (-)</button>
+                <button class="toggle-btn" id="def_dysphagia" onclick="toggle(this)">Dysphagia (-)</button>
+            </div>`}
+        `;
+        container.appendChild(createDetails("Mental Status", "sec_mental", mentalHtml, true));
+
+        // 2. CN
+        let cnHtml = `<textarea id="cn_note" rows="15" style="font-family:monospace; font-size:0.8rem;">${getTemplateCN()}</textarea>`;
+        container.appendChild(createDetails("Cranial Nerves", "sec_cn", cnHtml, false));
+
+        // 3. Motor
+        let motorHtml = '';
+        if(currentMode === 'CVA') {
+            motorHtml += `
+            <div class="sec-label">Brunnstrom Stage</div>
+            <div class="grid-auto">
+                <select id="br_side" style="width:80px;"><option>Right</option><option>Left</option></select>
+                <div style="display:flex; gap:5px; width:100%;">
+                    <select id="br_up">${brOpts.map(o=>`<option ${o=='V'?'selected':''}>Up: ${o}</option>`)}</select>
+                    <select id="br_ud">${brOpts.map(o=>`<option ${o=='V'?'selected':''}>Ud: ${o}</option>`)}</select>
+                    <select id="br_ll">${brOpts.map(o=>`<option ${o=='V'?'selected':''}>LL: ${o}</option>`)}</select>
+                </div>
+            </div>
+            <div class="sec-label">General</div>
+            <div class="grid-auto"><span>MRS:</span><select id="mrs_val">${[0,1,2,3,4,5].map(i=>`<option>${i}</option>`).join('')}</select></div>
+            <div class="grid-2">
+                <button class="toggle-btn" id="mus_atrophy" onclick="toggle(this)">Atrophy (-)</button>
+                <button class="toggle-btn" id="mus_fasc" onclick="toggle(this)">Fasciculation (-)</button>
+            </div>
+            ${renderMPGrid()}
+            ${renderDTRGrid()}
+            ${renderPathoReflex()}
+            ${renderMASNew()}
+            `;
+        } else if (currentMode === 'TBI') {
+            motorHtml += `
+            <div class="sec-label">Rancho Los Amigos Scale</div>
+            <select id="rancho_val">${ranchoOpts.map(o=>`<option>${o}</option>`).join('')}</select>
+            <div class="sec-label">General</div>
+            <div class="grid-2">
+                <button class="toggle-btn" id="mus_atrophy" onclick="toggle(this)">Atrophy (-)</button>
+                <button class="toggle-btn" id="mus_fasc" onclick="toggle(this)">Fasciculation (-)</button>
+            </div>
+            ${renderMPGrid()}
+            ${renderDTRGrid()}
+            ${renderPathoReflex()}
+            ${renderMASNew()}
+            `;
+        } else if (currentMode === 'SCI') {
+            // SCI Logic Updated
+            motorHtml += `
+            <div class="sec-label">ASIA Impairment Scale</div>
+            <div class="grid-2">
+                <div><span style="font-size:0.8rem">Grade</span><select id="asia_grade"><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
+                <div><span style="font-size:0.8rem">NLI Level</span><select id="sci_nli"><option value="">Select...</option>${nliOpts.map(o=>`<option>${o}</option>`).join('')}</select></div>
+            </div>
+
+            <div class="sec-label">Key Muscles (Myotomes)</div>
+            <div style="margin-bottom:5px; display:flex; gap:5px; align-items:center; font-size:0.85rem;">
+                <span>Motor Level:</span>
+                <select id="sci_ml_r"><option value="">R...</option>${nliOpts.map(o=>`<option>${o}</option>`).join('')}</select>
+                <select id="sci_ml_l"><option value="">L...</option>${nliOpts.map(o=>`<option>${o}</option>`).join('')}</select>
+            </div>
+            <div class="asia-grid-header"><span>Right</span><span>Level</span><span>Left</span></div>
+            ${renderASIARow('C5', 'Elbow Flex')}
+            ${renderASIARow('C6', 'Wrist Ext')}
+            ${renderASIARow('C7', 'Elbow Ext')}
+            ${renderASIARow('C8', 'Finger Flex')}
+            ${renderASIARow('T1', 'Finger Abd')}
+            ${renderASIARow('L2', 'Hip Flex')}
+            ${renderASIARow('L3', 'Knee Ext')}
+            ${renderASIARow('L4', 'Ankle Dorsi')}
+            ${renderASIARow('L5', 'Big Toe Ext')}
+            ${renderASIARow('S1', 'Ankle Plant')}
+            ${renderDTRGrid()}
+            <div class="sec-label">Sphincter / Reflex</div>
+            <div class="grid-2">
+                <input type="text" id="sci_anal_tone" placeholder="Anal Tone">
+                <input type="text" id="sci_bcr" placeholder="BC Reflex">
+            </div>
+            `;
+        }
+        container.appendChild(createDetails("Motor Function", "sec_motor", motorHtml, true));
+
+        // 4. Sensory
+        let sensoryHtml = '';
+        if(currentMode === 'SCI') {
+            // SCI Sensory Updated
+            sensoryHtml += `
+            <div style="margin-bottom:5px; display:flex; gap:5px; align-items:center; font-size:0.85rem;">
+                <span>Sensory Level:</span>
+                <select id="sci_sl_r"><option value="">R...</option>${nliOpts.map(o=>`<option>${o}</option>`).join('')}</select>
+                <select id="sci_sl_l"><option value="">L...</option>${nliOpts.map(o=>`<option>${o}</option>`).join('')}</select>
+            </div>
+            <div class="sensory-grid-header">
+                <div>Lv</div><div>R-LT</div><div>L-LT</div><div>R-PP</div><div>L-PP</div>
+            </div>
+            ${renderSensoryRows(['C2','C3','C4','C5','C6','C7','C8','T1','T4','T10','T12','L1','L2','L3','L4','L5','S1','S2','S3'])}
+            <div class="sec-label">Deep Sensation</div>
+            <textarea id="sensory_note" rows="3">Proprioception: Intact\nVibration: Intact</textarea>
+            `;
+        } else {
+            sensoryHtml += `
+            <textarea id="sensory_note" rows="12">${getTemplateSensoryDefault()}</textarea>
+            `;
+        }
+        container.appendChild(createDetails("Sensory Function", "sec_sensory", sensoryHtml, false));
+
+        // 5. Coordination
+        let coordHtml = renderCoordinationInputs();
+        container.appendChild(createDetails("Coordination & Gait", "sec_coord", coordHtml, false));
+
+        // 6. Other
+        let otherHtml = `
+        <textarea id="other_note" rows="8">${getTemplateOther()}</textarea>
+        `;
+        container.appendChild(createDetails("Other Findings", "sec_other", otherHtml, false));
+
+        // 7. Functional
+        let funcHtml = `
+        <div class="grid-auto"><span>Roll L:</span><select id="func_roll_l"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
+        <div class="grid-auto"><span>Roll R:</span><select id="func_roll_r"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
+        <div class="grid-auto"><span>Sit up:</span><select id="func_sit"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
+        <div class="grid-auto"><span>Stand up:</span><select id="func_stand"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
+        <div class="grid-auto"><span>Transfer:</span><select id="func_trans"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
+        <div class="sec-label">Balance (Static / Dynamic)</div>
+        <div class="grid-auto">
+            <span>Sitting:</span>
+            <div class="grid-2">
+                <select id="bal_sit_s">${balOpts.map(o=>`<option ${o=='Good'?'selected':''}>S: ${o}</option>`)}</select>
+                <select id="bal_sit_d">${balOpts.map(o=>`<option ${o=='Good'?'selected':''}>D: ${o}</option>`)}</select>
+            </div>
+        </div>
+        <div class="grid-auto">
+            <span>Standing:</span>
+            <div class="grid-2">
+                <select id="bal_stand_s">${balOpts.map(o=>`<option ${o=='Fair'?'selected':''}>S: ${o}</option>`)}</select>
+                <select id="bal_stand_d">${balOpts.map(o=>`<option ${o=='Poor'?'selected':''}>D: ${o}</option>`)}</select>
+            </div>
+        </div>
+        `;
+        container.appendChild(createDetails("Functional Status", "sec_func", funcHtml, true));
+
+        // 8. Barthel
+        let biHtml = `<div style="display:grid; gap:10px;">`;
         biItems.forEach(i => {
-            let html = `<div style="margin-bottom:10px;"><div style="font-weight:bold; font-size:0.9rem;">${i.t}</div><div class="seg-group" data-key="bi_${i.k}">`;
-            i.o.forEach(val => {
-                // Default to max score (first option)
-                html += `<button class="seg-btn ${val==i.o[0]?'active':''}" onclick="set(this); calcBI();">${val}</button>`;
-            });
-            html += `</div></div>`;
-            biDiv.innerHTML += html;
+            biHtml += `<div>
+                <div style="display:flex; align-items:flex-start; margin-bottom:2px;">
+                    <div style="font-size:0.85rem; font-weight:bold; white-space:nowrap;">${i.t}</div>
+                    <div class="hint" id="hint_bi_${i.k}"></div>
+                </div>
+                <div class="seg-group" data-key="bi_${i.k}">
+                    ${i.o.map(val => `<button class="seg-btn ${val==i.o[0]?'active':''}" onclick="set(this); updateBIHint('${i.k}'); calcBI();">${val}</button>`).join('')}
+                </div>
+            </div>`;
         });
+        biHtml += `<div style="text-align:right; margin-top:10px; color:var(--primary);">
+            <div style="font-weight:bold; font-size:1.2rem;">Total: <span id="bi_total">100</span></div>
+            <div id="bi_cat" style="font-weight:bold; font-size:1rem; color:#444;">Complete Independence</div>
+        </div></div>`;
+        container.appendChild(createDetails("Barthel Index", "sec_bi", biHtml, true));
 
-        loadData();
+        // 9. Local
+        let localHtml = `
+        <div class="grid-3">
+            <button class="toggle-btn" id="tube_ng" onclick="toggle(this)">NG (-)</button>
+            <button class="toggle-btn" id="tube_foley" onclick="toggle(this)">Foley (-)</button>
+            <button class="toggle-btn" id="tube_tracho" onclick="toggle(this)">Tracho (-)</button>
+        </div>
+        <div class="sec-label">Note</div>
+        <textarea id="local_note" rows="2"></textarea>
+        `;
+        container.appendChild(createDetails("Local Findings", "sec_local", localHtml, true));
+
+        // Init
+        biItems.forEach(i => updateBIHint(i.k));
         calcBI();
-    };
+        toggleInputVisibility('jo_judg');
+        toggleInputVisibility('jo_orient');
+    }
 
-    // --- Logic Helpers ---
+    // --- JOMAC ---
+    function renderJOMAC() {
+        const calcBtns = [93, 86, 79, 72, 65];
+        let calcHtml = `<div id="calc_btn_group">`;
+        calcBtns.forEach(n => {
+            calcHtml += `<button class="calc-btn" onclick="toggleCalc(this, ${n})">${n}</button>`;
+        });
+        calcHtml += `</div>`;
+
+        return `
+        <div class="sec-label">JOMAC</div>
+        <div class="jomac-row">
+            <div class="jomac-label">Judgement</div>
+            <select id="jo_judg" onchange="toggleInputVisibility(this.id)">
+                <option value="Intact">晚上睡覺突然尿急，可不可以尿在床上。不行</option>
+                <option value="Impaired">Impaired</option>
+            </select>
+        </div>
+        <div class="jomac-row">
+            <div class="jomac-label">Orientation</div>
+            <select id="jo_orient" onchange="toggleInputVisibility(this.id)">
+                <option value="Intact">To time/person/place</option>
+                <option value="Impaired">Impaired</option>
+            </select>
+        </div>
+        <div class="jomac-row">
+            <div class="jomac-label">Memory - Immediate</div>
+            <div class="grid-auto">
+                <select id="jo_mem_imm_res" style="width:80px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
+                <input type="text" id="jo_mem_imm_cont" value="紅色V、快樂V、腳踏車V">
+            </div>
+        </div>
+        <div class="jomac-row">
+            <div class="jomac-label">Memory - Recent</div>
+            <div class="grid-auto">
+                <select id="jo_mem_rec_res" style="width:80px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
+                <input type="text" id="jo_mem_rec_cont" value="今天早餐吃蛋餅">
+            </div>
+        </div>
+        <div class="jomac-row">
+            <div class="jomac-label">Memory - Long Term</div>
+            <div class="grid-auto">
+                <select id="jo_mem_lt_res" style="width:80px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
+                <input type="text" id="jo_mem_lt_cont" value="出生年月日">
+            </div>
+        </div>
+        <div class="jomac-row">
+            <div class="jomac-label">Abstract Thinking</div>
+            <div class="grid-auto">
+                <select id="jo_abs_res" style="width:100px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Fairly intact</option><option value="Impaired">Impaired</option></select>
+                <input type="text" id="jo_abs_cont" value="蘋果和香蕉都是什麼是。是水果">
+            </div>
+        </div>
+        <div class="jomac-row">
+            <div class="jomac-label">Calculation (100-7)</div>
+            <div class="grid-auto">
+                <select id="jo_calc_res" style="width:100px;"><option value="Impaired">Impaired</option><option value="Intact">Intact</option></select>
+                ${calcHtml}
+            </div>
+        </div>
+        `;
+    }
+
+    // --- Helpers ---
+    window.toggleInputVisibility = (id) => {
+        const el = document.getElementById(id);
+        if(!el) return;
+        let parent = el.parentElement;
+        let input = parent.querySelector('input[type="text"]');
+        const val = el.value;
+        if(val === "Impaired") {
+            if(input) input.classList.add('hidden');
+        } else {
+            if(input) input.classList.remove('hidden');
+        }
+    }
+
+    window.toggleCalc = (btn, num) => {
+        const group = document.getElementById('calc_btn_group');
+        const btns = group.querySelectorAll('.calc-btn');
+        const nums = [93, 86, 79, 72, 65];
+        const idx = nums.indexOf(num);
+        const isActive = btn.classList.contains('active');
+        const nextBtn = btns[idx+1];
+        const isNextActive = nextBtn ? nextBtn.classList.contains('active') : false;
+        if(isActive && !isNextActive) {
+             btn.classList.remove('active');
+        } else {
+            btns.forEach((b, i) => {
+                if(i <= idx) b.classList.add('active');
+                else b.classList.remove('active');
+            });
+        }
+    }
+
+    function createDetails(title, id, html, isOpen) {
+        const d = document.createElement('details');
+        if(isOpen) d.setAttribute('open','');
+        d.innerHTML = `<summary>${title}</summary><div class="content">${html}</div>`;
+        return d;
+    }
+
+    function renderMPGrid() {
+        const ops = mpOpts.map(o => `<option ${o==='5'?'selected':''}>${o}</option>`).join('');
+        return `
+        <div class="sec-label">Muscle Power (0-5)</div>
+        <div class="grid-3" style="text-align:center; font-size:0.8rem; font-weight:bold;">
+            <span>Region</span><span>Right</span><span>Left</span>
+        </div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
+            <span>Up Prox</span><select id="mp_up_r">${ops}</select><select id="mp_up_l">${ops}</select>
+        </div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
+            <span>Up Dist</span><select id="mp_ud_r">${ops}</select><select id="mp_ud_l">${ops}</select>
+        </div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
+            <span>Low Prox</span><select id="mp_lp_r">${ops}</select><select id="mp_lp_l">${ops}</select>
+        </div>
+        <div class="grid-3" style="align-items:center;">
+            <span>Low Dist</span><select id="mp_ld_r">${ops}</select><select id="mp_ld_l">${ops}</select>
+        </div>`;
+    }
+
+    function renderDTRGrid() {
+        const ops = reflexOpts.map(o => `<option ${o==='++'?'selected':''}>${o}</option>`).join('');
+        const items = ['Biceps','Triceps','Brach','Knee','Ankle'];
+        let html = `<div class="sec-label">DTR</div><div class="grid-3" style="font-size:0.8rem;"><span></span><span>Rt</span><span>Lt</span></div>`;
+        items.forEach(i => {
+            const k = i.toLowerCase();
+            html += `<div class="grid-3" style="margin-bottom:2px; align-items:center;">
+                <span style="font-size:0.8rem;">${i}</span>
+                <select id="dtr_${k}_r">${ops}</select>
+                <select id="dtr_${k}_l">${ops}</select>
+            </div>`;
+        });
+        return html;
+    }
+
+    function renderPathoReflex() {
+        return `
+        <div class="sec-label">Pathological Reflex</div>
+        <div class="grid-auto">
+            <span>Babinski:</span>
+            <div class="grid-2"><input type="text" id="bab_r" value="Plantar"><input type="text" id="bab_l" value="Plantar"></div>
+        </div>
+        <div class="grid-auto">
+            <span>Hoffman:</span>
+            <div class="grid-2"><input type="text" id="hof_r" value="-"><input type="text" id="hof_l" value="-"></div>
+        </div>`;
+    }
+
+    function renderMASNew() {
+        const ops = masOpts.map(o => `<option>${o}</option>`).join('');
+        const row = (label, id) => `<div class="mas-row"><span>${label}</span><select id="${id}">${ops}</select></div>`;
+        return `
+        <div class="sec-label">Modified Ashworth Scale</div>
+        <div class="mas-container">
+            <div class="grid-2">
+                <div class="mas-side">
+                    <div class="mas-side-title">Right Upper</div>
+                    ${row('Elbow', 'mas_r_elb')}
+                    ${row('Wrist', 'mas_r_wri')}
+                    ${row('Finger', 'mas_r_fin')}
+                </div>
+                <div class="mas-side">
+                    <div class="mas-side-title">Left Upper</div>
+                    ${row('Elbow', 'mas_l_elb')}
+                    ${row('Wrist', 'mas_l_wri')}
+                    ${row('Finger', 'mas_l_fin')}
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="mas-side">
+                    <div class="mas-side-title">Right Lower</div>
+                    ${row('Knee', 'mas_r_kne')}
+                    ${row('Ankle', 'mas_r_ank')}
+                </div>
+                <div class="mas-side">
+                    <div class="mas-side-title">Left Lower</div>
+                    ${row('Knee', 'mas_l_kne')}
+                    ${row('Ankle', 'mas_l_ank')}
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function renderASIARow(level, musc) {
+        const ops = asiaOpts.map(o => `<option ${o==='5'?'selected':''}>${o}</option>`).join('');
+        return `
+        <div class="asia-row">
+            <select id="asia_r_${level}">${ops}</select>
+            <div style="text-align:center; font-size:0.75rem;"><b>${level}</b><br><span style="color:#666">${musc}</span></div>
+            <select id="asia_l_${level}">${ops}</select>
+        </div>`;
+    }
+
+    function renderSensoryRows(levels) {
+        let html = '';
+        const ops = sensoryOpts.map(o => `<option>${o}</option>`).join('');
+        levels.forEach(l => {
+            html += `<div class="dermatome-grid">
+                <div>${l}</div>
+                <select id="sen_r_lt_${l}">${ops}</select>
+                <select id="sen_l_lt_${l}">${ops}</select>
+                <select id="sen_r_pp_${l}">${ops}</select>
+                <select id="sen_l_pp_${l}">${ops}</select>
+            </div>`;
+        });
+        return html;
+    }
+
+    function renderCoordinationInputs() {
+        const dysOpts = ['No dysmetria', 'Dysmetria', 'Tremor', 'Ataxia'].map(o=>`<option>${o}</option>`).join('');
+        return `
+        <div style="margin-bottom:10px; font-weight:bold;">Tremor</div>
+        <div class="grid-auto"><span>Resting:</span><select id="co_trem_rest"><option>Resting tremor(-)</option><option>Resting tremor(+)</option></select></div>
+        <div class="grid-auto"><span>Action:</span><select id="co_trem_act"><option>Action tremor(-)</option><option>Action tremor(+)</option></select></div>
+
+        <div style="margin:10px 0; font-weight:bold; border-bottom:1px solid #eee;">Limb Coordination</div>
+        <div class="grid-3" style="font-size:0.8rem; text-align:center;"><span>Test</span><span>Right</span><span>Left</span></div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
+            <span style="font-size:0.8rem;">FNF</span>
+            <select id="co_fnf_r">${dysOpts}</select>
+            <select id="co_fnf_l">${dysOpts}</select>
+        </div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
+            <span style="font-size:0.8rem;">HKS</span>
+            <select id="co_hks_r">${dysOpts}</select>
+            <select id="co_hks_l">${dysOpts}</select>
+        </div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
+            <span style="font-size:0.8rem;">RAM</span>
+            <select id="co_ram_r" style="font-size:0.7rem"><option>No dysdiadochokinesia</option><option>Impaired</option></select>
+            <select id="co_ram_l" style="font-size:0.7rem"><option>No dysdiadochokinesia</option><option>Impaired</option></select>
+        </div>
+
+        <div style="margin:10px 0; font-weight:bold; border-bottom:1px solid #eee;">Gait / Balance</div>
+        <div class="grid-auto"><span>Romberg:</span><select id="co_romberg"><option>Negative (no sway with eyes closed)</option><option>Positive</option></select></div>
+        <div class="grid-auto"><span>Truncal:</span><select id="co_trunk"><option>No truncal ataxia</option><option>Truncal ataxia</option></select></div>
+        <div class="grid-auto"><span>Tandem:</span><select id="co_tandem"><option>Did not test</option><option>Impaired</option><option>Good</option></select></div>
+        <div class="grid-auto"><span>Gait:</span><select id="co_gait"><option>Walk without device</option><option>Walk with cane</option><option>Walker</option><option>Wheelchair</option></select></div>
+        <div class="grid-auto"><span>Balance:</span><select id="co_bal"><option>Good balance</option><option>Fair balance</option><option>Poor balance</option></select></div>
+        `;
+    }
+
+    // --- Logic ---
+    window.setMode = (mode) => {
+        currentMode = mode;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        render();
+    }
     window.set = (btn) => {
         btn.parentElement.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        save();
     }
-
     window.toggle = (btn) => {
         btn.classList.toggle('active');
-        if(btn.classList.contains('active')) btn.innerText = "(+)";
-        else btn.innerText = "(-)";
-        save();
+        const txt = btn.innerText;
+        const name = txt.split(' ')[0];
+        btn.innerText = btn.classList.contains('active') ? name + " (+)" : name + " (-)";
     }
-
-    function getVal(key) {
-        const group = document.querySelector(`.seg-group[data-key="${key}"]`);
-        if(group) {
-            const act = group.querySelector('.active');
-            return act ? act.innerText : '';
-        }
-        // If select/input
-        const el = document.getElementById(key);
-        if(el) return el.value;
-        // If toggle
-        const tog = document.getElementById(key);
-        if(tog) return tog.classList.contains('active') ? "(+)" : "(-)";
-        return '';
-    }
-
-    function setGroup(key, val) {
-        const group = document.querySelector(`.seg-group[data-key="${key}"]`);
-        if(group) {
-            group.querySelectorAll('.seg-btn').forEach(b => {
-                if(b.innerText == val) {
-                    group.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active'));
-                    b.classList.add('active');
-                }
-            });
+    window.updateBIHint = (key) => {
+        const item = biItems.find(i => i.k === key);
+        const grp = document.querySelector(`.seg-group[data-key="bi_${key}"]`);
+        const act = grp.querySelector('.active');
+        const hintEl = document.getElementById(`hint_bi_${key}`);
+        if(act && item && hintEl) {
+            const val = parseInt(act.innerText);
+            hintEl.innerText = item.d[val] || '';
         }
     }
-
-    // --- Calculation ---
     window.calcBI = () => {
         let sum = 0;
         biItems.forEach(i => {
-            const v = getVal(`bi_${i.k}`);
-            if(v) sum += parseInt(v);
+            const grp = document.querySelector(`.seg-group[data-key="bi_${i.k}"]`);
+            if(grp) {
+                const act = grp.querySelector('.active');
+                if(act) sum += parseInt(act.innerText);
+            }
         });
-        document.getElementById('bi_total').innerText = sum;
+        const el = document.getElementById('bi_total');
+        if(el) el.innerText = sum;
+
+        // Cat logic
+        let cat = "Complete Independence";
+        if(sum<=20) cat="Total Dependency";
+        else if(sum<=60) cat="Severe Dependency";
+        else if(sum<=90) cat="Moderate Dependency";
+        else if(sum<=99) cat="Slight Dependency";
+        document.getElementById('bi_cat').innerText = cat;
+
         return sum;
     }
-
-    // --- Data Persistence ---
-    window.save = () => {
-        const data = {};
-        // Inputs/Selects
-        document.querySelectorAll('select, input').forEach(el => data[el.id] = el.value);
-        // Seg Groups
-        document.querySelectorAll('.seg-group').forEach(el => {
-            const act = el.querySelector('.active');
-            if(act) data[el.dataset.key] = act.innerText;
-        });
-        // Toggles
-        document.querySelectorAll('.toggle-btn').forEach(el => data[el.id] = el.classList.contains('active'));
-        
-        localStorage.setItem('rehab_adm_note', JSON.stringify(data));
+    function getV(id) {
+        const el = document.getElementById(id);
+        if(!el) return "";
+        return el.value.replace(/Up: |Ud: |LL: |S: |D: /g, "");
     }
-
-    window.loadData = () => {
-        const raw = localStorage.getItem('rehab_adm_note');
-        if(!raw) return;
-        const data = JSON.parse(raw);
-        
-        for(let k in data) {
-            const el = document.getElementById(k);
-            if(el && el.tagName === 'SELECT') el.value = data[k];
-            else if(k.startsWith('btn_')) { // Toggles
-                const btn = document.getElementById(k);
-                if(data[k]) { btn.classList.add('active'); btn.innerText = "(+)"; }
-                else { btn.classList.remove('active'); btn.innerText = "(-)"; }
-            }
-            else { // Groups
-                setGroup(k, data[k]);
-            }
-        }
+    function getSeg(key) {
+        const grp = document.querySelector(`.seg-group[data-key="${key}"]`);
+        if(!grp) return "";
+        const act = grp.querySelector('.active');
+        return act ? act.innerText : "";
+    }
+    function getTog(id) {
+        const el = document.getElementById(id);
+        if(!el) return "(-)";
+        return el.classList.contains('active') ? "(+)" : "(-)";
+    }
+    function pad(str, len) {
+        if(!str) str = "";
+        let s = str;
+        while(s.length < len) s += " ";
+        return s;
     }
 
     window.clearData = () => {
-        if(confirm("Start New Patient?")) {
-            localStorage.removeItem('rehab_adm_note');
-            location.reload();
+        if(confirm("Clear all data?")) {
+            render();
+            document.getElementById('pt_name').value = "";
+            document.getElementById('pt_bed').value = "";
         }
     }
 
-    // --- Export Format (Strict) ---
+    // --- Copy Logic ---
     window.copyNote = () => {
-        // Helper for padding text to align columns roughly
-        const pad = (str, len) => (str + "          ").substring(0, len);
-        const V = (k) => getVal(k);
+        const V = getV;
+        const gcsString = `E${V('gcs_e')}V${V('gcs_v')}M${V('gcs_m')}`;
 
-        let text = `MOTOR FUNCTION\n`;
-        text += `Brunnstrom stage:  \n`;
-        text += `    ${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
-        
-        text += `Modified Rankin Scale:  ${V('mrs')}\n`;
-        text += `  Muscle appearance: Atrophy${V('btn_atrophy')}, Fasciculation${V('btn_fasc')}\n`;
-        
-        // MP Grid - Spacing is key
-        text += `  M.P.:(0-5)           R't         L't     \n`;
-        text += `  upper    proximal     ${V('mp_ur')}           ${V('mp_ul')}\n`;
-        text += `                      distal     ${V('mp_u_dist_r')}           ${V('mp_u_dist_l')}\n`;
-        text += `  lower    proximal     ${V('mp_lr')}           ${V('mp_ll')}\n`;
-        text += `                      distal     ${V('mp_l_dist_r')}           ${V('mp_l_dist_l')}\n`;
-        
-        // DTR Grid
-        text += `  DTR: (0-++++)         R't        L't\n`;
-        text += `     Biceps reflex        ${V('dtr_0_r')}         ${V('dtr_0_l')}\n`;
-        text += `     Triceps                  ${V('dtr_1_r')}         ${V('dtr_1_l')}\n`;
-        text += `     Brachiaradialis     ${V('dtr_2_r')}         ${V('dtr_2_l')}\n`;
-        text += `     Knee jerk               ${V('dtr_3_r')}         ${V('dtr_3_l')}\n`;
-        text += `     Ankle jerk            ${V('dtr_4_r')}         ${V('dtr_4_l')}\n`;
-        
-        text += ` Babinski's sign: ${V('bab_r')} / ${V('bab_l')}\n`;
-        text += ` Hoffman sign: ${V('hof_r')}/${V('hof_l')}\n`;
-        
-        text += `Functional status:\n`;
-        text += `- Rolling to L't: ${V('roll_l')} to R't: ${V('roll_r')}\n`;
-        text += `- Sitting up: ${V('sit_up')}\n`;
-        text += `- Transfer: ${V('trans_func')}\n`;
-        text += `- Standing up: ${V('stand_up')}\n`;
-        
-        text += `- Balance            Static              Dynamic          \n`;
-        text += `       Sitting        ${pad(V('bal_sit_s'),18)}  ${V('bal_sit_d')}\n`;
-        text += `       Standing       ${pad(V('bal_sta_s'),18)}  ${V('bal_sta_d')}\n`;
-        
-        text += `================================================================\n`;
-        
-        // Barthel
-        const sum = calcBI();
-        let cat = "Independent";
-        if(sum<=20) cat="Total Dependence";
-        else if(sum<=60) cat="Severe Dependence";
-        else if(sum<=90) cat="Moderate Dependence";
-        else if(sum<=99) cat="Slight Dependence";
+        let t = `=================NEUROLOGICAL EXAM======================\n`;
+        t += `MENTAL STATUS\n`;
+        t += `Consciousness: Alert,  Glasgow Coma Scale :${gcsString}\n`;
+        t += `${getSeg('hand_side')} handed\n`;
+        if(currentMode !== 'SCI') {
+             t += `Language: (FRCN): Fluency:${getTog('lang_fluency')}  Repetition:${getTog('lang_rep')}   Comprehension:${getTog('lang_comp')}  Naming:${getTog('lang_name')}\n`;
+             t += `Speech: Dysarthria${getTog('def_dysarthria')}, Aphasia${getTog('def_aphasia')}, Dysphonia(-)\n`;
+             t += `Swallow:  Dysphagia${getTog('def_dysphagia')}, NG feeding :${getTog('tube_ng')}\n`;
+        } else {
+             t += `Speech: Dysarthria${getTog('def_dysarthria')}, Dysphagia${getTog('def_dysphagia')}\n`;
+        }
 
-        text += `BARTHEL INDEX \n`;
-        text += ` Feeding  ${V('bi_feed')}/10   Grooming ${V('bi_groom')}/5    Dressing ${V('bi_dress')}/10   Bathing  ${V('bi_bath')}/5   \n`;
-        text += ` Toilet   ${V('bi_toilet')}/10   Bowel   ${V('bi_bowel')}/10   Bladder  ${V('bi_blad')}/10   Walking  ${V('bi_walk')}/15    \n`;
-        text += ` Transfer ${V('bi_trans')}/15   Stairs   ${V('bi_stair')}/10                        \n`;
-        text += ` Total: ${sum}  ==＞ ${cat}`;
+        t += `================================================================\n`;
+        if(currentMode !== 'SCI') {
+            // JOMAC
+            const jo = (id, inputId) => {
+                const val = V(id);
+                if(val === 'Impaired') return 'Impaired';
+                const txt = V(inputId);
+                if(id === 'jo_judg' || id === 'jo_orient') return val;
+                return `${val} : ${txt}`;
+            }
 
-        navigator.clipboard.writeText(text).then(() => {
+            // Calc string
+            const getCalcStr = () => {
+                const status = V('jo_calc_res');
+                const group = document.getElementById('calc_btn_group');
+                if(!group) return status;
+                const actives = Array.from(group.querySelectorAll('.active')).map(b=>b.innerText);
+                if(actives.length === 0) return status + '; (100)';
+                actives.sort((a,b)=>b-a);
+                return `${status}; (100->${actives.join('->')})`;
+            };
+
+            t += `JOMAC:\n`;
+            t += `  Judgement: ${jo('jo_judg', '')}\n`;
+            t += `  Orientation: ${jo('jo_orient', '')}\n`;
+            t += `  Memory:\n`;
+            t += `  Immediate recall:  ${jo('jo_mem_imm_res', 'jo_mem_imm_cont')}\n`;
+            t += `                 Recent memory: ${jo('jo_mem_rec_res', 'jo_mem_rec_cont')}\n`;
+            t += `                 Long term memory: ${jo('jo_mem_lt_res', 'jo_mem_lt_cont')}\n`;
+            t += `  Abstract thinking: ${jo('jo_abs_res', 'jo_abs_cont')}\n`;
+            t += `  Calculation: ${getCalcStr()}\n`;
+            t += `================================================================\n`;
+        }
+        t += `${V('cn_note')}\n`;
+        t += `================================================================\n`;
+        t += `MOTOR FUNCTION\n`;
+
+        const getMASBlock = () => {
+            let m = `Modified Ashworth Scale:\n`;
+            m += ` Right (Elbow/Wrist/Finger): ${V('mas_r_elb')} / ${V('mas_r_wri')} / ${V('mas_r_fin')}\n`;
+            m += ` Right (Knee/Ankle):         ${V('mas_r_kne')} / ${V('mas_r_ank')}\n`;
+            m += ` Left  (Elbow/Wrist/Finger): ${V('mas_l_elb')} / ${V('mas_l_wri')} / ${V('mas_l_fin')}\n`;
+            m += ` Left  (Knee/Ankle):         ${V('mas_l_kne')} / ${V('mas_l_ank')}\n`;
+            return m;
+        };
+
+        if(currentMode === 'CVA') {
+            t += `Brunnstrom stage:  ${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
+            t += `Modified Rankin Scale:  ${V('mrs_val')}\n`;
+            t += ` Muscle appearance: Atrophy${getTog('mus_atrophy')}, Fasciculation${getTog('mus_fasc')}\n`;
+            t += ` M.P.:(0-5)            R't         L't      \n`;
+            t += ` Upper    Proximal     ${pad(V('mp_up_r'),12)}${V('mp_up_l')}\n`;
+            t += `          Distal       ${pad(V('mp_ud_r'),12)}${V('mp_ud_l')}\n`;
+            t += ` Lower    Proximal     ${pad(V('mp_lp_r'),12)}${V('mp_lp_l')}\n`;
+            t += `          Distal       ${pad(V('mp_ld_r'),12)}${V('mp_ld_l')}\n`;
+            t += ` DTR: (0-++++)         R't         L't\n`;
+            t += `      Biceps reflex    ${pad(V('dtr_biceps_r'),12)}${V('dtr_biceps_l')}\n`;
+            t += `      Triceps          ${pad(V('dtr_triceps_r'),12)}${V('dtr_triceps_l')}\n`;
+            t += `      Brachiaradialis  ${pad(V('dtr_brach_r'),12)}${V('dtr_brach_l')}\n`;
+            t += `      Knee jerk        ${pad(V('dtr_knee_r'),12)}${V('dtr_knee_l')}\n`;
+            t += `      Ankle jerk       ${pad(V('dtr_ankle_r'),12)}${V('dtr_ankle_l')}\n`;
+            t += ` Babinski's sign: ${V('bab_r')} / ${V('bab_l')}\n`;
+            t += ` Hoffman sigh: ${V('hof_r')}/${V('hof_l')}\n`;
+            t += `================================================================\n`;
+            t += getMASBlock();
+        }
+        else if (currentMode === 'SCI') {
+            t += `American Spinal Injury Association Impairment Scale: Grade ${V('asia_grade')}\n`;
+            t += `Neurological level of injury: ${V('sci_nli')}\n`;
+            t += `Motor Level: Right ${V('sci_ml_r')} / Left ${V('sci_ml_l')}\n`;
+            t += `  Right                            Left            \n`;
+            const AR = (lvl, name) => `     ${pad(V('asia_r_'+lvl),6)} ${pad(lvl+'('+name+')',25)} ${V('asia_l_'+lvl)}\n`;
+            t += AR('C5','Elbow flexors');
+            t += AR('C6','Wrist Extensors');
+            t += AR('C7','Elbow extensors');
+            t += AR('C8','Finger Flexors');
+            t += AR('T1','Finger abductors');
+            t += `            ~~\n`;
+            t += AR('L2','Hip flexors');
+            t += AR('L3','Knee extensors');
+            t += AR('L4','Ankle dorsiflexors');
+            t += AR('L5','Long toe extensors');
+            t += AR('S1','Ankle plant-flexors');
+            t += `================================================================\n`;
+            t += `Deep tendon reflex: (0-4+)\n`;
+            t += `Biceps reflex         ${pad(V('dtr_biceps_r'),6)}${V('dtr_biceps_l')}\n`;
+            t += `Triceps reflex        ${pad(V('dtr_triceps_r'),6)}${V('dtr_triceps_l')}\n`;
+            t += `Brachiaradialis       ${pad(V('dtr_brach_r'),6)}${V('dtr_brach_l')}\n`;
+            t += `Knee jerk             ${pad(V('dtr_knee_r'),6)}${V('dtr_knee_l')}\n`;
+            t += `Ankle jerk            ${pad(V('dtr_ankle_r'),6)}${V('dtr_ankle_l')}\n`;
+            t += `Anal tone: ${V('sci_anal_tone')}\n`;
+            t += `Bubocavernosus reflex: ${V('sci_bcr')}\n`;
+        }
+        else if (currentMode === 'TBI') {
+            t += `Rancho Los Amigos Scale: ${V('rancho_val')}\n`;
+            t += `Muscle appearance: Atrophy${getTog('mus_atrophy')}, Fasciculation${getTog('mus_fasc')}\n`;
+            t += `- Muscle power:        Right    Left\n`;
+            t += `      Upper Proximal   ${pad(V('mp_up_r'),9)}${V('mp_up_l')}\n`;
+            t += `            Distal     ${pad(V('mp_ud_r'),9)}${V('mp_ud_l')}\n`;
+            t += `      Lower Proximal   ${pad(V('mp_lp_r'),9)}${V('mp_lp_l')}\n`;
+            t += `            Distal     ${pad(V('mp_ld_r'),9)}${V('mp_ld_l')}\n`;
+            t += `-Deep tendon reflex  Right    Left\n`;
+            t += `       Biceps            ${pad(V('dtr_biceps_r'),7)}${V('dtr_biceps_l')}\n`;
+            t += `       Triceps           ${pad(V('dtr_triceps_r'),7)}${V('dtr_triceps_l')}\n`;
+            t += `       Brachioradialis   ${pad(V('dtr_brach_r'),7)}${V('dtr_brach_l')}\n`;
+            t += `       Knee              ${pad(V('dtr_knee_r'),7)}${V('dtr_knee_l')}\n`;
+            t += `       Ankle             ${pad(V('dtr_ankle_r'),7)}${V('dtr_ankle_l')}\n`;
+            t += ` Babinski's sign:       ${pad(V('bab_r'),9)}${V('bab_l')}\n`;
+            t += ` Hoffman sign           ${pad(V('hof_r'),9)}${V('hof_l')}\n`;
+            t += `================================================================\n`;
+            t += getMASBlock();
+        }
+
+        t += `================================================================\n`;
+        if(currentMode === 'SCI') {
+            t += `SENSORY FUNCTION\n`;
+            t += `Sensory Level: Right ${V('sci_sl_r')} / Left ${V('sci_sl_l')}\n`;
+            t += `Sensory status : \n`;
+            t += `    Light touch           Pin-prick        \n`;
+            t += `    R't    L't           R't     L't    \n`;
+            const lvls = ['C2','C3','C4','C5','C6','C7','C8','T1','T4','T10','T12','L1','L2','L3','L4','L5','S1','S2','S3'];
+            lvls.forEach(l => {
+                t += `    ${pad(V('sen_r_lt_'+l),7)}${pad(V('sen_l_lt_'+l),7)} ${pad(l,6)} ${pad(V('sen_r_pp_'+l),8)}${V('sen_l_pp_'+l)}\n`;
+            });
+            t += `\n${V('sensory_note')}\n`;
+        } else {
+            t += `${V('sensory_note')}\n`;
+        }
+
+        t += `================================================================\n`;
+        t += `COORDINATION AND GAIT\n`;
+        t += `Coordination:\n`;
+        t += `Tremor--> ${V('co_trem_rest')}, ${V('co_trem_act')}\n`;
+        t += `                                Right           Left\n`;
+        t += `FNF (finger-nose-finger) :  ${pad(V('co_fnf_r'),16)}${V('co_fnf_l')}\n`;
+        t += `HKS (heel-knee-shin)     :  ${pad(V('co_hks_r'),16)}${V('co_hks_l')}\n`;
+        t += `Rapid alternative movement: ${pad(V('co_ram_r'),20)} ${V('co_ram_l')}\n`;
+        t += `Romberg  test:  ${V('co_romberg')}, ${V('co_trunk')}\n`;
+        t += `Tandem gait: ${V('co_tandem')}\n`;
+        t += `Gait: ${V('co_gait')}, ${V('co_bal')}\n`;
+        t += `================================================================\n`;
+        t += `${V('other_note')}\n`;
+
+        t += `================================================================\n`;
+        t += `Functional status:\n`;
+        t += `- Rolling to L't: ${V('func_roll_l')} to R't: ${V('func_roll_r')}\n`;
+        t += `- Sitting up: ${V('func_sit')}\n`;
+        t += `- Transfer: ${V('func_trans')}\n`;
+        t += `- Standing up: ${V('func_stand')}\n`;
+        t += `- Balance             Static              Dynamic          \n`;
+        t += `        Sitting        ${pad(V('bal_sit_s'),19)} ${V('bal_sit_d')}\n`;
+        t += `        Standing       ${pad(V('bal_stand_s'),19)} ${V('bal_stand_d')}\n`;
+
+        t += `================================================================\n`;
+        const biSum = calcBI();
+        let cat = "Complete Independence";
+        if(biSum<=20) cat="Total Dependency";
+        else if(biSum<=60) cat="Severe Dependency";
+        else if(biSum<=90) cat="Moderate Dependency";
+        else if(biSum<=99) cat="Slight Dependency";
+
+        t += `BARTHEL INDEX \n`;
+        t += ` Feeding  ${getSeg('bi_feed')}/10   Grooming ${getSeg('bi_groom')}/5    Dressing ${getSeg('bi_dress')}/10    Bathing  ${getSeg('bi_bath')}/5    \n`;
+        t += ` Toilet   ${getSeg('bi_toilet')}/10   Bowel    ${getSeg('bi_bowel')}/10    Bladder  ${getSeg('bi_blad')}/10    Walking  ${getSeg('bi_walk')}/15    \n`;
+        t += ` Transfer ${getSeg('bi_trans')}/15   Stairs   ${getSeg('bi_stair')}/10                          \n`;
+        t += ` Total: ${biSum}  ==> ${cat}\n`;
+        t += `================================================================\n`;
+        t += `Local finding: NG${getTog('tube_ng')}, Foley${getTog('tube_foley')}, Tracheostomy ${getTog('tube_tracho')}\n`;
+        t += `${V('local_note')}`;
+
+        navigator.clipboard.writeText(t).then(() => {
             const btn = document.querySelector('.btn-copy');
             const old = btn.innerText;
             btn.innerText = "✅ Copied!";
             setTimeout(() => btn.innerText = old, 2000);
         });
     }
-</script>
 
+    window.onload = () => { render(); };
+</script>
 </body>
 </html>
