@@ -512,13 +512,13 @@
     <script>
         // --- Config ---
         let currentMode = 'CVA';
-        const mpOpts = ['5', '4+', '4', '3', '2', '1', '0'];
-        const reflexOpts = ['++++', '+++', '++', '+', '0'];
+        const mpOpts = ['5', '4+', '4', '3', '2', '1', '0', 'NT'];
+        const reflexOpts = ['++++', '+++', '++', '+', '0', 'NT'];
         const asiaOpts = ['5', '4', '3', '2', '1', '0', 'NT'];
         const sensoryOpts = ['2', '1', '0', 'NT'];
-        const brOpts = ['I', 'II', 'III', 'IV', 'V', 'VI'];
-        const masOpts = ['0', '1', '1+', '2', '3', '4'];
-        const balOpts = ['Good', 'Fair-Good', 'Fair', 'Poor-Fair', 'Poor', 'Assist', 'Zero'];
+        const brOpts = ['I', 'II', 'III', 'IV', 'V', 'VI', 'NT'];
+        const masOpts = ['0', '1', '1+', '2', '3', '4', 'NT'];
+        const balOpts = ['Good', 'Fair-Good', 'Fair', 'Poor-Fair', 'Poor', 'Assist', 'Zero', 'NT'];
         const nliOpts = [];
         ['C', 'T', 'L', 'S'].forEach(r => {
             let max = r == 'C' ? 8 : r == 'T' ? 12 : 5;
@@ -547,7 +547,7 @@
 
         // --- Templates ---
         function getTemplateCN() {
-            return `CRNANIAL NERVES
+            return `CRANIAL NERVES
  I: smell: no test
  II: visual acuity: no test
      visual fields: confrontation test
@@ -592,8 +592,8 @@
   Two-point discrimination test:
   Double stimulation test: No neglect
   Stereognosis: Not done
-  Graphesthesia (+; 閉上眼在手掌寫數字3可辨認)
-  Sensory status : Anal sensation (+)`;
+  Graphesthesia: Intact
+  Anal sensation: (+)`;
         }
 
         function getTemplateOther() {
@@ -659,13 +659,23 @@
             let motorHtml = '';
             if (currentMode === 'CVA') {
                 motorHtml += `
-            <div class="sec-label">Brunnstrom Stage</div>
+            <div class="sec-label">Brunnstrom Stage
+                <button class="toggle-btn" id="br_bilateral_btn" onclick="toggle(this); document.getElementById('br_bilateral_row').classList.toggle('hidden'); if(this.classList.contains('active')){document.getElementById('br_other_side').innerText = document.getElementById('br_side').value === 'Right' ? 'Left' : 'Right';}" style="margin-left:10px; padding:2px 8px; font-size:0.8rem; border-radius:4px;">Bilateral (-)</button>
+            </div>
             <div class="grid-auto">
-                <select id="br_side" style="width:100px; font-weight:bold;"><option>Right</option><option>Left</option></select>
+                <select id="br_side" style="width:100px; font-weight:bold;" onchange="if(document.getElementById('br_bilateral_btn').classList.contains('active')) document.getElementById('br_other_side').innerText = this.value === 'Right' ? 'Left' : 'Right';"><option>Right</option><option>Left</option></select>
                 <div style="display:flex; gap:5px; width:100%;">
-                    <select id="br_up">${brOpts.map(o => `<option ${o == 'V' ? 'selected' : ''}>Up: ${o}</option>`)}</select>
-                    <select id="br_ud">${brOpts.map(o => `<option ${o == 'V' ? 'selected' : ''}>Ud: ${o}</option>`)}</select>
-                    <select id="br_ll">${brOpts.map(o => `<option ${o == 'V' ? 'selected' : ''}>LL: ${o}</option>`)}</select>
+                    <select id="br_up">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Up: ${o}</option>`)}</select>
+                    <select id="br_ud">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Ud: ${o}</option>`)}</select>
+                    <select id="br_ll">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>LL: ${o}</option>`)}</select>
+                </div>
+            </div>
+            <div class="grid-auto hidden" id="br_bilateral_row">
+                <span id="br_other_side" style="width:100px; font-weight:bold; text-align:center; display:inline-block; font-size:0.95rem;">Left</span>
+                <div style="display:flex; gap:5px; width:100%;">
+                    <select id="br_o_up">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Up: ${o}</option>`)}</select>
+                    <select id="br_o_ud">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Ud: ${o}</option>`)}</select>
+                    <select id="br_o_ll">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>LL: ${o}</option>`)}</select>
                 </div>
             </div>
             <div class="sec-label">General</div>
@@ -759,7 +769,7 @@
             <div class="grid-auto"><span>2-point disc.:</span><input type="text" id="sen_2pd" placeholder="Value"></div>
             <div class="grid-auto"><span>Double stim.:</span><select id="sen_double"><option>No neglect</option><option>Neglect</option></select></div>
             <div class="grid-auto"><span>Stereognosis:</span><select id="sen_stereo"><option>Not done</option><option>Intact</option><option>Impaired</option></select></div>
-            <div class="grid-auto"><span>Graphesthesia:</span><input type="text" id="sen_graph" value="+; 閉上眼在手掌寫數字3可辨認"></div>
+            <div class="grid-auto"><span>Graphesthesia:</span><input type="text" id="sen_graph" value="Intact"></div>
             <div class="grid-auto"><span>Anal sensation:</span><button class="toggle-btn active" id="sen_anal" onclick="toggle(this)">Anal sensation (+)</button></div>
             `;
             }
@@ -786,15 +796,15 @@
         <div class="grid-auto">
             <span>Sitting:</span>
             <div class="grid-2">
-                <select id="bal_sit_s">${balOpts.map(o => `<option ${o == 'Good' ? 'selected' : ''}>S: ${o}</option>`)}</select>
-                <select id="bal_sit_d">${balOpts.map(o => `<option ${o == 'Good' ? 'selected' : ''}>D: ${o}</option>`)}</select>
+                <select id="bal_sit_s">${balOpts.map(o => `<option value="${o}" ${o == 'Good' ? 'selected' : ''}>S: ${o}</option>`)}</select>
+                <select id="bal_sit_d">${balOpts.map(o => `<option value="${o}" ${o == 'Good' ? 'selected' : ''}>D: ${o}</option>`)}</select>
             </div>
         </div>
         <div class="grid-auto">
             <span>Standing:</span>
             <div class="grid-2">
-                <select id="bal_stand_s">${balOpts.map(o => `<option ${o == 'Fair' ? 'selected' : ''}>S: ${o}</option>`)}</select>
-                <select id="bal_stand_d">${balOpts.map(o => `<option ${o == 'Poor' ? 'selected' : ''}>D: ${o}</option>`)}</select>
+                <select id="bal_stand_s">${balOpts.map(o => `<option value="${o}" ${o == 'Fair' ? 'selected' : ''}>S: ${o}</option>`)}</select>
+                <select id="bal_stand_d">${balOpts.map(o => `<option value="${o}" ${o == 'Poor' ? 'selected' : ''}>D: ${o}</option>`)}</select>
             </div>
         </div>
         `;
@@ -1050,11 +1060,11 @@
         }
 
         function renderCoordinationInputs() {
-            const dysOpts = ['No dysmetria', 'Dysmetria', 'Tremor', 'Ataxia'].map(o => `<option>${o}</option>`).join('');
+            const dysOpts = ['No dysmetria', 'Dysmetria', 'Tremor', 'Ataxia', 'NT'].map(o => `<option>${o}</option>`).join('');
             return `
         <div style="margin-bottom:10px; font-weight:bold;">Tremor</div>
-        <div class="grid-auto"><span>Resting:</span><select id="co_trem_rest"><option>Resting tremor(-)</option><option>Resting tremor(+)</option></select></div>
-        <div class="grid-auto"><span>Action:</span><select id="co_trem_act"><option>Action tremor(-)</option><option>Action tremor(+)</option></select></div>
+        <div class="grid-auto"><span>Resting:</span><select id="co_trem_rest"><option>Resting tremor(-)</option><option>Resting tremor(+)</option><option>NT</option></select></div>
+        <div class="grid-auto"><span>Action:</span><select id="co_trem_act"><option>Action tremor(-)</option><option>Action tremor(+)</option><option>NT</option></select></div>
 
         <div style="margin:10px 0; font-weight:bold; border-bottom:1px solid #eee;">Limb Coordination</div>
         <div class="grid-3" style="font-size:0.8rem; text-align:center; font-weight:bold; margin-bottom:5px;"><span>Test</span><span>Right</span><span>Left</span></div>
@@ -1070,16 +1080,16 @@
         </div>
         <div class="grid-3" style="align-items:center; margin-bottom:5px;">
             <span style="font-size:0.85rem;">RAM</span>
-            <select id="co_ram_r" style="font-size:0.8rem"><option>No dysdiadochokinesia</option><option>Impaired</option></select>
-            <select id="co_ram_l" style="font-size:0.8rem"><option>No dysdiadochokinesia</option><option>Impaired</option></select>
+            <select id="co_ram_r" style="font-size:0.8rem"><option>No dysdiadochokinesia</option><option>Impaired</option><option>NT</option></select>
+            <select id="co_ram_l" style="font-size:0.8rem"><option>No dysdiadochokinesia</option><option>Impaired</option><option>NT</option></select>
         </div>
 
         <div style="margin:10px 0; font-weight:bold; border-bottom:1px solid #eee;">Gait / Balance</div>
-        <div class="grid-auto"><span>Romberg:</span><select id="co_romberg"><option>Negative (no sway with eyes closed)</option><option>Positive</option></select></div>
-        <div class="grid-auto"><span>Truncal:</span><select id="co_trunk"><option>No truncal ataxia</option><option>Truncal ataxia</option></select></div>
-        <div class="grid-auto"><span>Tandem:</span><select id="co_tandem"><option>Did not test</option><option>Impaired</option><option>Good</option></select></div>
-        <div class="grid-auto"><span>Gait:</span><select id="co_gait"><option>Walk without device</option><option>Walk with cane</option><option>Walker</option><option>Wheelchair</option></select></div>
-        <div class="grid-auto"><span>Balance:</span><select id="co_bal"><option>Good balance</option><option>Fair balance</option><option>Poor balance</option></select></div>
+        <div class="grid-auto"><span>Romberg:</span><select id="co_romberg"><option>Negative (no sway with eyes closed)</option><option>Positive</option><option>NT</option></select></div>
+        <div class="grid-auto"><span>Truncal:</span><select id="co_trunk"><option>No truncal ataxia</option><option>Truncal ataxia</option><option>NT</option></select></div>
+        <div class="grid-auto"><span>Tandem:</span><select id="co_tandem"><option>Did not test</option><option>Impaired</option><option>Good</option><option>NT</option></select></div>
+        <div class="grid-auto"><span>Gait:</span><select id="co_gait"><option>Walk without device</option><option>Walk with cane</option><option>Walker</option><option>Wheelchair</option><option>Bedridden</option><option>NT</option></select></div>
+        <div class="grid-auto"><span>Balance:</span><select id="co_bal"><option>Good balance</option><option>Fair balance</option><option>Poor balance</option><option>NT</option></select></div>
         `;
         }
 
@@ -1179,7 +1189,7 @@
                     document.getElementById('sen_2pd').value = "";
                     document.getElementById('sen_double').selectedIndex = 0;
                     document.getElementById('sen_stereo').selectedIndex = 0;
-                    document.getElementById('sen_graph').value = "+; 閉上眼在手掌寫數字3可辨認";
+                    document.getElementById('sen_graph').value = "Intact";
                     const anal = document.getElementById('sen_anal');
                     if (anal) { anal.classList.add('active'); anal.innerText = "Anal sensation (+)"; }
                 }
@@ -1251,6 +1261,11 @@
 
             if (currentMode === 'CVA') {
                 t += `Brunnstrom stage:  ${V('br_side')}:  ${V('br_up')} / ${V('br_ud')} / ${V('br_ll')}\n`;
+                const bilatBtn = document.getElementById('br_bilateral_btn');
+                if (bilatBtn && bilatBtn.classList.contains('active')) {
+                    let otherSide = V('br_side') === 'Right' ? 'Left' : 'Right';
+                    t += `                   ${otherSide}:  ${V('br_o_up')} / ${V('br_o_ud')} / ${V('br_o_ll')}\n`;
+                }
                 t += `Modified Rankin Scale:  ${V('mrs_val')}\n`;
                 t += ` Muscle appearance: Atrophy${getTog('mus_atrophy')}, Fasciculation${getTog('mus_fasc')}\n`;
                 t += ` M.P.:(0-5)            R't          L't       \n`;
@@ -1261,11 +1276,11 @@
                 t += ` DTR: (0-++++)         R't          L't\n`;
                 t += `      Biceps reflex    ${pad(V('dtr_biceps_r'), 12)}${V('dtr_biceps_l')}\n`;
                 t += `      Triceps          ${pad(V('dtr_triceps_r'), 12)}${V('dtr_triceps_l')}\n`;
-                t += `      Brachiaradialis  ${pad(V('dtr_brach_r'), 12)}${V('dtr_brach_l')}\n`;
+                t += `      Brachioradialis  ${pad(V('dtr_brach_r'), 12)}${V('dtr_brach_l')}\n`;
                 t += `      Knee jerk        ${pad(V('dtr_knee_r'), 12)}${V('dtr_knee_l')}\n`;
                 t += `      Ankle jerk       ${pad(V('dtr_ankle_r'), 12)}${V('dtr_ankle_l')}\n`;
                 t += ` Babinski's sign: ${V('bab_r')} / ${V('bab_l')}\n`;
-                t += ` Hoffman sigh: ${V('hof_r')}/${V('hof_l')}\n`;
+                t += ` Hoffman's sign: ${V('hof_r')} / ${V('hof_l')}\n`;
                 t += `================================================================\n`;
                 t += getMASBlock();
             }
@@ -1285,16 +1300,16 @@
                 t += AR('L3', 'Knee extensors');
                 t += AR('L4', 'Ankle dorsiflexors');
                 t += AR('L5', 'Long toe extensors');
-                t += AR('S1', 'Ankle plant-flexors');
+                t += AR('S1', 'Ankle plantar flexors');
                 t += `================================================================\n`;
                 t += `Deep tendon reflex: (0-4+)\n`;
                 t += `Biceps reflex         ${pad(V('dtr_biceps_r'), 6)}${V('dtr_biceps_l')}\n`;
                 t += `Triceps reflex        ${pad(V('dtr_triceps_r'), 6)}${V('dtr_triceps_l')}\n`;
-                t += `Brachiaradialis       ${pad(V('dtr_brach_r'), 6)}${V('dtr_brach_l')}\n`;
+                t += `Brachioradialis       ${pad(V('dtr_brach_r'), 6)}${V('dtr_brach_l')}\n`;
                 t += `Knee jerk             ${pad(V('dtr_knee_r'), 6)}${V('dtr_knee_l')}\n`;
                 t += `Ankle jerk            ${pad(V('dtr_ankle_r'), 6)}${V('dtr_ankle_l')}\n`;
                 t += `Anal tone: ${V('sci_anal_tone')}\n`;
-                t += `Bubocavernosus reflex: ${V('sci_bcr')}\n`;
+                t += `Bulbocavernosus reflex: ${V('sci_bcr')}\n`;
             }
             else if (currentMode === 'TBI') {
                 t += `Rancho Los Amigos Scale: ${V('rancho_val')}\n`;
@@ -1311,7 +1326,7 @@
                 t += `       Knee              ${pad(V('dtr_knee_r'), 7)}${V('dtr_knee_l')}\n`;
                 t += `       Ankle             ${pad(V('dtr_ankle_r'), 7)}${V('dtr_ankle_l')}\n`;
                 t += ` Babinski's sign:       ${pad(V('bab_r'), 9)}${V('bab_l')}\n`;
-                t += ` Hoffman sign           ${pad(V('hof_r'), 9)}${V('hof_l')}\n`;
+                t += ` Hoffman's sign:        ${pad(V('hof_r'), 9)}${V('hof_l')}\n`;
                 t += `================================================================\n`;
                 t += getMASBlock();
             }
@@ -1341,7 +1356,7 @@
                 s += `   Double stimulation test: ${V('sen_double')}\n`;
                 s += `   Stereognosis: ${V('sen_stereo')}\n`;
                 s += `   Graphesthesia: ${V('sen_graph')}\n`;
-                s += `   Sensory status : ${getTog('sen_anal')}\n`;
+                s += `   Anal sensation: ${getTog('sen_anal')}\n`;
                 t += s;
             }
 
@@ -1352,7 +1367,7 @@
             t += `                                Right           Left\n`;
             t += `FNF (finger-nose-finger) :  ${pad(V('co_fnf_r'), 16)}${V('co_fnf_l')}\n`;
             t += `HKS (heel-knee-shin)     :  ${pad(V('co_hks_r'), 16)}${V('co_hks_l')}\n`;
-            t += `Rapid alternative movement: ${pad(V('co_ram_r'), 20)} ${V('co_ram_l')}\n`;
+            t += `Rapid alternating movement: ${pad(V('co_ram_r'), 20)} ${V('co_ram_l')}\n`;
             t += `Romberg  test:  ${V('co_romberg')}, ${V('co_trunk')}\n`;
             t += `Tandem gait: ${V('co_tandem')}\n`;
             t += `Gait: ${V('co_gait')}, ${V('co_bal')}\n`;
@@ -1403,7 +1418,15 @@
             });
         }
 
-        window.onload = () => { render(); };
+        window.onload = () => {
+            render();
+            // Select text on focus for easier editing
+            document.body.addEventListener('focusin', (e) => {
+                if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
+                    e.target.select();
+                }
+            });
+        };
     </script>
 </body>
 
