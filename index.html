@@ -315,6 +315,40 @@
             border-color: var(--primary);
         }
 
+        /* Cycle Buttons for SCI Grids */
+        .cycle-btn {
+            width: 100%;
+            padding: 8px 4px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: white;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.1s, border-color 0.1s;
+        }
+
+        .cycle-btn:active {
+            background: #e5e7eb;
+        }
+
+        .btn-fill {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .btn-fill:active {
+            background: #dcfce7;
+        }
+
         /* Specific Layouts */
         .mas-container {
             display: flex;
@@ -519,6 +553,13 @@
         const brOpts = ['I', 'II', 'III', 'IV', 'V', 'VI', 'NT'];
         const masOpts = ['0', '1', '1+', '2', '3', '4', 'NT'];
         const balOpts = ['Good', 'Fair-Good', 'Fair', 'Poor-Fair', 'Poor', 'Assist', 'Zero', 'NT'];
+
+        // Make arrays globally accessible for the cycle function
+        window.opts = {
+            'asiaOpts': asiaOpts,
+            'sensoryOpts': sensoryOpts
+        };
+
         const nliOpts = [];
         ['C', 'T', 'L', 'S'].forEach(r => {
             let max = r == 'C' ? 8 : r == 'T' ? 12 : 5;
@@ -711,7 +752,13 @@
                 <div><span style="font-size:0.8rem">NLI Level</span><select id="sci_nli"><option value="">Select...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select></div>
             </div>
 
-            <div class="sec-label">Key Muscles (Myotomes)</div>
+            <div class="sec-label" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Key Muscles (Myotomes)</span>
+                <div>
+                    <button class="btn-fill" onclick="fillAll('asia_r_', '5')">R't All 5</button>
+                    <button class="btn-fill" onclick="fillAll('asia_l_', '5')">L't All 5</button>
+                </div>
+            </div>
             <div style="margin-bottom:5px; display:flex; gap:5px; align-items:center; font-size:0.85rem;">
                 <span>Motor Level:</span>
                 <select id="sci_ml_r"><option value="">R...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
@@ -746,6 +793,10 @@
                 <span>Sensory Level:</span>
                 <select id="sci_sl_r"><option value="">R...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
                 <select id="sci_sl_l"><option value="">L...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:5px; margin-bottom:5px;">
+                <button class="btn-fill" onclick="fillAll('sen_r_lt_', '2'); fillAll('sen_r_pp_', '2')">R't All 2</button>
+                <button class="btn-fill" onclick="fillAll('sen_l_lt_', '2'); fillAll('sen_l_pp_', '2')">L't All 2</button>
             </div>
             <div class="sensory-grid-header" style="display:grid; grid-template-columns:40px 1fr 1fr 1fr 1fr; gap:2px; text-align:center; font-weight:bold; background:#eee; padding:5px 0;">
                 <div>Lv</div><div>R-LT</div><div>L-LT</div><div>R-PP</div><div>L-PP</div>
@@ -897,7 +948,7 @@
         <div class="jomac-row">
             <div class="jomac-label">Abstract Thinking</div>
             <div class="grid-auto">
-                <select id="jo_abs_res" style="width:120px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Fairly intact</option><option value="Impaired">Impaired</option></select>
+                <select id="jo_abs_res" style="width:120px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
                 <input type="text" id="jo_abs_cont" value="蘋果和香蕉都是什麼是。是水果">
             </div>
         </div>
@@ -1035,25 +1086,23 @@
         }
 
         function renderASIARow(level, musc) {
-            const ops = asiaOpts.map(o => `<option ${o === '5' ? 'selected' : ''}>${o}</option>`).join('');
             return `
         <div class="asia-row">
-            <select id="asia_r_${level}">${ops}</select>
+            <button id="asia_r_${level}" class="cycle-btn" onclick="cycleBtn(this, 'asiaOpts')">5</button>
             <div style="text-align:center; font-size:0.75rem;"><b>${level}</b><br><span style="color:#666">${musc}</span></div>
-            <select id="asia_l_${level}">${ops}</select>
+            <button id="asia_l_${level}" class="cycle-btn" onclick="cycleBtn(this, 'asiaOpts')">5</button>
         </div>`;
         }
 
         function renderSensoryRows(levels) {
             let html = '';
-            const ops = sensoryOpts.map(o => `<option>${o}</option>`).join('');
             levels.forEach(l => {
                 html += `<div class="dermatome-grid">
                 <div>${l}</div>
-                <select id="sen_r_lt_${l}">${ops}</select>
-                <select id="sen_l_lt_${l}">${ops}</select>
-                <select id="sen_r_pp_${l}">${ops}</select>
-                <select id="sen_l_pp_${l}">${ops}</select>
+                <button id="sen_r_lt_${l}" class="cycle-btn" onclick="cycleBtn(this, 'sensoryOpts')">2</button>
+                <button id="sen_l_lt_${l}" class="cycle-btn" onclick="cycleBtn(this, 'sensoryOpts')">2</button>
+                <button id="sen_r_pp_${l}" class="cycle-btn" onclick="cycleBtn(this, 'sensoryOpts')">2</button>
+                <button id="sen_l_pp_${l}" class="cycle-btn" onclick="cycleBtn(this, 'sensoryOpts')">2</button>
             </div>`;
             });
             return html;
@@ -1094,6 +1143,23 @@
         }
 
         // --- Logic ---
+        window.cycleBtn = (btn, arrName) => {
+            const arr = window.opts[arrName];
+            if (!arr) return;
+            let current = btn.innerText.trim();
+            let idx = arr.indexOf(current);
+            let nextIdx = (idx + 1) % arr.length;
+            btn.innerText = arr[nextIdx];
+        }
+
+        window.fillAll = (prefix, val) => {
+            document.querySelectorAll(`[id^="${prefix}"]`).forEach(btn => {
+                if (btn.tagName === 'BUTTON') {
+                    btn.innerText = val;
+                }
+            });
+        }
+
         window.setMode = (mode) => {
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -1146,7 +1212,8 @@
         function getV(id) {
             const el = document.getElementById(id);
             if (!el) return "";
-            return el.value.replace(/Up: |Ud: |LL: |S: |D: /g, "");
+            let val = el.tagName === 'BUTTON' ? el.innerText : el.value;
+            return val.replace(/Up: |Ud: |LL: |S: |D: /g, "");
         }
         function getSeg(key) {
             const grp = document.querySelector(`.seg-group[data-key="${key}"]`);
@@ -1193,6 +1260,13 @@
                     const anal = document.getElementById('sen_anal');
                     if (anal) { anal.classList.add('active'); anal.innerText = "Anal sensation (+)"; }
                 }
+
+                // Reset SCI Buttons specifically
+                document.querySelectorAll('.cycle-btn').forEach(btn => {
+                    const id = btn.id;
+                    if (id.includes('asia_')) btn.innerText = '5';
+                    if (id.includes('sen_')) btn.innerText = '2';
+                });
             }
         }
 
