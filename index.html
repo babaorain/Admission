@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rehab Admission Board v2</title>
+    <title>Rehab Admission Board v3</title>
     <style>
         :root {
             --primary: #00796b;
@@ -560,6 +560,79 @@
             .mas-row { grid-template-columns: 50px 1fr; }
             .toggle-btn { font-size: 0.82rem; padding: 7px 9px; }
         }
+
+        /* Draft picker overlay */
+        .draft-picker {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 400;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .draft-picker.show { display: flex; }
+        .draft-picker-content {
+            background: var(--surface);
+            width: 100%;
+            max-width: 540px;
+            max-height: 80vh;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.25s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .draft-picker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .draft-close {
+            background: transparent;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: var(--text-light);
+            padding: 4px 10px;
+        }
+        .draft-row {
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .draft-row.current {
+            background: var(--primary-light);
+        }
+        .draft-row:active { background: var(--primary-light); }
+        .draft-info {
+            flex: 1;
+            padding: 12px 16px;
+            cursor: pointer;
+        }
+        .draft-name { font-size: 0.98rem; margin-bottom: 3px; }
+        .draft-meta { font-size: 0.78rem; color: var(--text-light); }
+        .draft-del {
+            background: transparent;
+            border: none;
+            border-left: 1px solid var(--border);
+            padding: 0 16px;
+            cursor: pointer;
+            color: var(--warn);
+            font-size: 1.1rem;
+        }
+        .draft-picker-footer {
+            padding: 10px;
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid var(--border);
+        }
     </style>
 </head>
 
@@ -578,7 +651,7 @@
         </div>
         <div class="quick-bar">
             <span class="gcs-sum" id="gcs_sum_disp">GCS: E4V5M6 = 15</span>
-            <span class="save-status" id="save_status">●&nbsp;自動儲存</span>
+            <span class="save-status" id="save_status" onclick="openDraftPicker()" style="cursor:pointer;">●&nbsp;自動儲存</span>
         </div>
     </div>
 
@@ -599,9 +672,24 @@
     </div>
 
     <div class="fab-area">
-        <button class="btn-secondary danger" onclick="clearData()">🗑 重置</button>
-        <button class="btn-secondary" onclick="loadDraft()">📂 載入</button>
+        <button class="btn-secondary" onclick="newPatient()">➕ 新病人</button>
+        <button class="btn-secondary" onclick="openDraftPicker()">📂 草稿庫</button>
         <button class="btn-copy" onclick="copyNote()">📋 複製病歷</button>
+    </div>
+
+    <!-- Draft picker overlay -->
+    <div class="draft-picker" id="draft_picker">
+        <div class="draft-picker-content">
+            <div class="draft-picker-header">
+                <h3 style="margin:0; color:var(--primary)">草稿庫</h3>
+                <button class="draft-close" onclick="closeDraftPicker()">✕</button>
+            </div>
+            <div id="draft_picker_body" style="overflow-y:auto; flex:1;"></div>
+            <div class="draft-picker-footer">
+                <button class="btn-secondary danger" onclick="clearAllDrafts()" style="flex:1; padding:10px;">🗑 清空全部</button>
+                <button class="btn-secondary" onclick="exportAllDrafts()" style="flex:1; padding:10px;">⬇ 匯出 JSON</button>
+            </div>
+        </div>
     </div>
 
     <div class="toast" id="toast"></div>
@@ -609,9 +697,11 @@
     <script>
         // ============ Config ============
         let currentMode = 'CVA';
-        const STORAGE_KEY = 'rehab_board_v2_draft';
-        const STORAGE_DEBOUNCE = 600;
+        const STORAGE_KEY_LAST = 'rehab_board_v3_last';   // last opened draft (single)
+        const STORAGE_KEY_LIST = 'rehab_board_v3_list';   // multi-patient draft library
+        const STORAGE_DEBOUNCE = 500;
         let saveTimer = null;
+        let currentDraftId = null;  // null = unsaved/anonymous
 
         const mpOpts = ['5', '4+', '4', '3', '2', '1', '0', 'NT'];
         const reflexOpts = ['++++', '+++', '++', '+', '0', 'NT'];
@@ -1469,19 +1559,73 @@
             ['jo_judg', 'jo_orient', 'jo_mem_imm_res', 'jo_mem_rec_res', 'jo_mem_lt_res', 'jo_abs_res'].forEach(toggleInputVisibility);
         }
 
+        // ---- Multi-patient draft library ----
+        function checkStorageAvailable() {
+            try {
+                localStorage.setItem('__test__', '1');
+                localStorage.removeItem('__test__');
+                return true;
+            } catch (e) { return false; }
+        }
+
+        function getDraftList() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY_LIST);
+                return raw ? JSON.parse(raw) : {};
+            } catch (e) { return {}; }
+        }
+
+        function setDraftList(list) {
+            localStorage.setItem(STORAGE_KEY_LIST, JSON.stringify(list));
+        }
+
+        // draft id strategy: bed+name signature; anonymous if both empty
+        function makeDraftId() {
+            const bed = (document.getElementById('pt_bed')?.value || '').trim();
+            const name = (document.getElementById('pt_name')?.value || '').trim();
+            if (!bed && !name) return null;
+            return `${bed}|${name}`;
+        }
+
+        function setStatus(text, color) {
+            const status = document.getElementById('save_status');
+            if (!status) return;
+            status.innerText = text;
+            status.style.color = color || 'var(--ok)';
+        }
+
         function scheduleSave() {
             clearTimeout(saveTimer);
-            const status = document.getElementById('save_status');
-            if (status) { status.style.color = 'var(--text-light)'; status.innerText = '◌  儲存中…'; }
+            setStatus('◌  儲存中…', 'var(--text-light)');
             saveTimer = setTimeout(() => {
                 try {
+                    if (!checkStorageAvailable()) {
+                        setStatus('⚠  瀏覽器禁止儲存', 'var(--warn)');
+                        return;
+                    }
                     const state = collectAllState();
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-                    if (status) { status.style.color = 'var(--ok)'; status.innerText = '●  已儲存'; }
+                    state._savedAt = Date.now();
+                    // Always save "last" — used for crash recovery even before pt info is filled
+                    localStorage.setItem(STORAGE_KEY_LAST, JSON.stringify(state));
+                    // If pt info present, also save into the named draft library
+                    const id = makeDraftId();
+                    if (id) {
+                        currentDraftId = id;
+                        const list = getDraftList();
+                        list[id] = state;
+                        setDraftList(list);
+                        setStatus(`● 已儲存 (${countDrafts()})`, 'var(--ok)');
+                    } else {
+                        setStatus('● 已暫存 (未設床號)', 'var(--text-light)');
+                    }
                 } catch (e) {
-                    if (status) { status.style.color = 'var(--warn)'; status.innerText = '✗  儲存失敗'; }
+                    setStatus('✗ 儲存失敗', 'var(--warn)');
                 }
             }, STORAGE_DEBOUNCE);
+        }
+
+        function countDrafts() {
+            return Object.keys(getDraftList()).length;
         }
 
         function attachAutosaveListeners() {
@@ -1494,38 +1638,141 @@
             });
         }
 
-        window.loadDraft = () => {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) { showToast('沒有已儲存的草稿'); return; }
-                const state = JSON.parse(raw);
-                if (state.mode && state.mode !== currentMode) {
-                    currentMode = state.mode;
-                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelector(`.mode-btn[data-mode="${state.mode}"]`)?.classList.add('active');
-                    render();
-                }
-                restoreState(state);
-                showToast('草稿已載入');
-            } catch (e) {
-                showToast('載入失敗');
+        function applyState(state) {
+            if (state.mode && state.mode !== currentMode) {
+                currentMode = state.mode;
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector(`.mode-btn[data-mode="${state.mode}"]`)?.classList.add('active');
+                render();
             }
-        };
+            restoreState(state);
+            // Restore header/addon fields too (they live outside #app-container)
+            ['pt_bed', 'pt_name', 'pt_date', 'addon_doc'].forEach(id => {
+                if (state[id] !== undefined) {
+                    const el = document.getElementById(id);
+                    if (el) el.value = state[id];
+                }
+            });
+            ['addon_tcm', 'addon_ilib', 'addon_rtms'].forEach(id => {
+                const key = '_t_' + id;
+                const btn = document.getElementById(id);
+                if (btn && state[key] !== undefined) {
+                    const isActive = state[key];
+                    const name = btn.innerText.split(' (')[0];
+                    if (isActive) { btn.classList.add('active'); btn.innerText = name + ' (+)'; }
+                    else { btn.classList.remove('active'); btn.innerText = name + ' (-)'; }
+                }
+            });
+        }
 
         function autoLoadOnStart() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return;
-                const state = JSON.parse(raw);
-                if (state.mode && state.mode !== currentMode) {
-                    currentMode = state.mode;
-                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelector(`.mode-btn[data-mode="${state.mode}"]`)?.classList.add('active');
-                    render();
+                if (!checkStorageAvailable()) {
+                    setStatus('⚠ 瀏覽器禁止儲存', 'var(--warn)');
+                    return;
                 }
-                restoreState(state);
-            } catch (e) { /* ignore */ }
+                const raw = localStorage.getItem(STORAGE_KEY_LAST);
+                if (!raw) {
+                    const cnt = countDrafts();
+                    if (cnt > 0) setStatus(`📂 已存 ${cnt} 份草稿`, 'var(--text-light)');
+                    return;
+                }
+                const state = JSON.parse(raw);
+                applyState(state);
+                const id = makeDraftId();
+                if (id) {
+                    currentDraftId = id;
+                    setStatus(`● 已還原: ${id.replace('|', ' ')}`, 'var(--ok)');
+                } else {
+                    setStatus('● 已還原 (上次草稿)', 'var(--ok)');
+                }
+            } catch (e) { setStatus('⚠ 還原失敗', 'var(--warn)'); }
         }
+
+        // ---- Draft library UI ----
+        window.openDraftPicker = () => {
+            const list = getDraftList();
+            const ids = Object.keys(list).sort((a, b) => (list[b]._savedAt || 0) - (list[a]._savedAt || 0));
+            const picker = document.getElementById('draft_picker');
+            const body = document.getElementById('draft_picker_body');
+            body.innerHTML = '';
+            if (ids.length === 0) {
+                body.innerHTML = '<div style="text-align:center; padding:30px 20px; color:var(--text-light)">目前沒有已存草稿。<br>填入床號和姓名後會自動建立草稿。</div>';
+            } else {
+                ids.forEach(id => {
+                    const s = list[id];
+                    const [bed, name] = id.split('|');
+                    const t = s._savedAt ? new Date(s._savedAt) : null;
+                    const tStr = t ? `${t.getMonth() + 1}/${t.getDate()} ${t.getHours().toString().padStart(2, '0')}:${t.getMinutes().toString().padStart(2, '0')}` : '';
+                    const isCurrent = id === currentDraftId;
+                    const row = document.createElement('div');
+                    row.className = 'draft-row' + (isCurrent ? ' current' : '');
+                    row.innerHTML = `
+                        <div class="draft-info" onclick="loadDraftById('${id.replace(/'/g, "\\'")}')">
+                            <div class="draft-name"><b>${bed || '—'}</b> ${name || '(未命名)'}</div>
+                            <div class="draft-meta">${s.mode || 'CVA'} · ${tStr}${isCurrent ? ' · <span style="color:var(--primary)">● 目前</span>' : ''}</div>
+                        </div>
+                        <button class="draft-del" onclick="deleteDraft('${id.replace(/'/g, "\\'")}')">🗑</button>`;
+                    body.appendChild(row);
+                });
+            }
+            picker.classList.add('show');
+        };
+
+        window.closeDraftPicker = () => {
+            document.getElementById('draft_picker').classList.remove('show');
+        };
+
+        window.loadDraftById = (id) => {
+            const list = getDraftList();
+            const state = list[id];
+            if (!state) { showToast('草稿不存在'); return; }
+            currentDraftId = id;
+            applyState(state);
+            // Save as "last" too
+            localStorage.setItem(STORAGE_KEY_LAST, JSON.stringify(state));
+            closeDraftPicker();
+            showToast(`已載入 ${id.replace('|', ' ')}`);
+            setStatus(`● ${id.replace('|', ' ')}`, 'var(--ok)');
+        };
+
+        window.deleteDraft = (id) => {
+            if (!confirm(`刪除草稿「${id.replace('|', ' ')}」？`)) return;
+            const list = getDraftList();
+            delete list[id];
+            setDraftList(list);
+            if (id === currentDraftId) currentDraftId = null;
+            openDraftPicker();
+            showToast('已刪除');
+        };
+
+        window.newPatient = () => {
+            if (!confirm('開始新病人？目前畫面將清空（已存草稿不受影響）。')) return;
+            currentDraftId = null;
+            currentMode = 'CVA';
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.mode-btn[data-mode="CVA"]').classList.add('active');
+            render();
+            ['pt_bed', 'pt_name', 'addon_doc'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            ['addon_tcm', 'addon_ilib', 'addon_rtms'].forEach(id => {
+                const b = document.getElementById(id);
+                b.classList.remove('active');
+                const name = b.innerText.split(' (')[0];
+                b.innerText = name + ' (-)';
+            });
+            // Reset date
+            const dateEl = document.getElementById('pt_date');
+            if (dateEl) {
+                const d = new Date();
+                dateEl.value = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
+            }
+            // Clear "last"
+            localStorage.removeItem(STORAGE_KEY_LAST);
+            setStatus('● 新病人', 'var(--text-light)');
+            showToast('已開始新病人');
+        };
 
         function showToast(msg) {
             const t = document.getElementById('toast');
@@ -1571,24 +1818,29 @@
             return s + " ".repeat(len - w);
         }
 
-        window.clearData = () => {
-            if (!confirm("確定要清空所有資料嗎？已儲存草稿也會被刪除。")) return;
-            localStorage.removeItem(STORAGE_KEY);
-            currentMode = 'CVA';
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector('.mode-btn[data-mode="CVA"]').classList.add('active');
-            render();
-            document.getElementById('pt_name').value = "";
-            document.getElementById('pt_bed').value = "";
-            document.getElementById('pt_date').value = "";
-            ['addon_tcm', 'addon_ilib', 'addon_rtms'].forEach(id => {
-                const b = document.getElementById(id);
-                b.classList.remove('active');
-                const name = b.innerText.split(' (')[0];
-                b.innerText = name + ' (-)';
-            });
-            document.getElementById('addon_doc').value = "";
-            showToast('已重置');
+        window.clearAllDrafts = () => {
+            const cnt = countDrafts();
+            if (cnt === 0) { showToast('已是空的'); return; }
+            if (!confirm(`確定刪除全部 ${cnt} 份草稿？此動作無法復原。`)) return;
+            localStorage.removeItem(STORAGE_KEY_LIST);
+            localStorage.removeItem(STORAGE_KEY_LAST);
+            currentDraftId = null;
+            openDraftPicker();
+            showToast('已清空全部草稿');
+        };
+
+        window.exportAllDrafts = () => {
+            const list = getDraftList();
+            if (Object.keys(list).length === 0) { showToast('沒有草稿可匯出'); return; }
+            const blob = new Blob([JSON.stringify(list, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const d = new Date();
+            a.href = url;
+            a.download = `rehab_drafts_${d.getFullYear()}${(d.getMonth() + 1).toString().padStart(2, '0')}${d.getDate().toString().padStart(2, '0')}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('已匯出 JSON');
         };
 
         window.copyNote = () => {
@@ -1841,23 +2093,27 @@
         // ============ Boot ============
         window.onload = () => {
             render();
-            autoLoadOnStart();
-            // Date default
+            // Date default first
             const dateEl = document.getElementById('pt_date');
             if (dateEl && !dateEl.value) {
                 const d = new Date();
                 dateEl.value = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
             }
-            // Pt info auto-save
-            ['pt_bed', 'pt_name', 'pt_date', 'addon_doc'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) { el.addEventListener('input', scheduleSave); }
-            });
+            // Attach autosave to ALL inputs/selects/textareas globally (including header & addon fields)
+            attachAutosaveListeners();
+            // ALSO attach to addon toggle buttons (which use onclick=toggle but live OUTSIDE app-container)
+            // Note: toggle() already calls scheduleSave internally, so this is just safety belt
+            // Now try to load
+            autoLoadOnStart();
             // Select text on focus
             document.body.addEventListener('focusin', (e) => {
                 if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
                     e.target.select();
                 }
+            });
+            // Close draft picker on background click
+            document.getElementById('draft_picker').addEventListener('click', (e) => {
+                if (e.target.id === 'draft_picker') closeDraftPicker();
             });
             // Warn before leaving with unsaved changes
             window.addEventListener('beforeunload', (e) => {
