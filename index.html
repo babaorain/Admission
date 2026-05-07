@@ -699,9 +699,10 @@
         let currentMode = 'CVA';
         const STORAGE_KEY_LAST = 'rehab_board_v3_last';   // last opened draft (single)
         const STORAGE_KEY_LIST = 'rehab_board_v3_list';   // multi-patient draft library
-        const STORAGE_DEBOUNCE = 500;
+        const STORAGE_DEBOUNCE = 1500;  // longer debounce so partial typing doesn't create duplicates
+        const ANON_ID = '__anon__';     // single anonymous slot for drafts without bed+name
         let saveTimer = null;
-        let currentDraftId = null;  // null = unsaved/anonymous
+        let currentDraftId = null;  // tracks the current draft's key in the library
 
         const mpOpts = ['5', '4+', '4', '3', '2', '1', '0', 'NT'];
         const reflexOpts = ['++++', '+++', '++', '+', '0', 'NT'];
@@ -1605,18 +1606,26 @@
                     }
                     const state = collectAllState();
                     state._savedAt = Date.now();
-                    // Always save "last" — used for crash recovery even before pt info is filled
+                    // Always save "last" snapshot for crash recovery
                     localStorage.setItem(STORAGE_KEY_LAST, JSON.stringify(state));
-                    // If pt info present, also save into the named draft library
-                    const id = makeDraftId();
-                    if (id) {
-                        currentDraftId = id;
-                        const list = getDraftList();
-                        list[id] = state;
-                        setDraftList(list);
-                        setStatus(`● 已儲存 (${countDrafts()})`, 'var(--ok)');
+
+                    const newId = makeDraftId() || ANON_ID;
+                    const list = getDraftList();
+
+                    // KEY CHANGE: rename existing draft instead of creating duplicate
+                    if (currentDraftId && currentDraftId !== newId && list[currentDraftId]) {
+                        // Move under new id (preserves original _createdAt etc.)
+                        delete list[currentDraftId];
+                    }
+                    list[newId] = state;
+                    setDraftList(list);
+                    currentDraftId = newId;
+
+                    if (newId === ANON_ID) {
+                        setStatus('● 已暫存 (未設床號姓名)', 'var(--text-light)');
                     } else {
-                        setStatus('● 已暫存 (未設床號)', 'var(--text-light)');
+                        const label = newId.replace('|', ' ').trim();
+                        setStatus(`● ${label} 已儲存`, 'var(--ok)');
                     }
                 } catch (e) {
                     setStatus('✗ 儲存失敗', 'var(--warn)');
@@ -1679,12 +1688,13 @@
                 }
                 const state = JSON.parse(raw);
                 applyState(state);
-                const id = makeDraftId();
-                if (id) {
-                    currentDraftId = id;
-                    setStatus(`● 已還原: ${id.replace('|', ' ')}`, 'var(--ok)');
+                // Lock currentDraftId so subsequent edits update the same draft
+                const id = makeDraftId() || ANON_ID;
+                currentDraftId = id;
+                if (id === ANON_ID) {
+                    setStatus('● 已還原 (未設床號姓名)', 'var(--ok)');
                 } else {
-                    setStatus('● 已還原 (上次草稿)', 'var(--ok)');
+                    setStatus(`● 已還原: ${id.replace('|', ' ')}`, 'var(--ok)');
                 }
             } catch (e) { setStatus('⚠ 還原失敗', 'var(--warn)'); }
         }
@@ -1701,15 +1711,19 @@
             } else {
                 ids.forEach(id => {
                     const s = list[id];
-                    const [bed, name] = id.split('|');
+                    const isAnon = id === ANON_ID;
+                    const [bed, name] = isAnon ? ['', ''] : id.split('|');
                     const t = s._savedAt ? new Date(s._savedAt) : null;
                     const tStr = t ? `${t.getMonth() + 1}/${t.getDate()} ${t.getHours().toString().padStart(2, '0')}:${t.getMinutes().toString().padStart(2, '0')}` : '';
                     const isCurrent = id === currentDraftId;
                     const row = document.createElement('div');
                     row.className = 'draft-row' + (isCurrent ? ' current' : '');
+                    const displayName = isAnon
+                        ? '<i style="color:var(--text-light)">(未設床號姓名)</i>'
+                        : `<b>${bed || '—'}</b> ${name || '(未命名)'}`;
                     row.innerHTML = `
                         <div class="draft-info" onclick="loadDraftById('${id.replace(/'/g, "\\'")}')">
-                            <div class="draft-name"><b>${bed || '—'}</b> ${name || '(未命名)'}</div>
+                            <div class="draft-name">${displayName}</div>
                             <div class="draft-meta">${s.mode || 'CVA'} · ${tStr}${isCurrent ? ' · <span style="color:var(--primary)">● 目前</span>' : ''}</div>
                         </div>
                         <button class="draft-del" onclick="deleteDraft('${id.replace(/'/g, "\\'")}')">🗑</button>`;
@@ -1732,12 +1746,14 @@
             // Save as "last" too
             localStorage.setItem(STORAGE_KEY_LAST, JSON.stringify(state));
             closeDraftPicker();
-            showToast(`已載入 ${id.replace('|', ' ')}`);
-            setStatus(`● ${id.replace('|', ' ')}`, 'var(--ok)');
+            const label = id === ANON_ID ? '(未設床號姓名)' : id.replace('|', ' ');
+            showToast(`已載入 ${label}`);
+            setStatus(`● ${label}`, 'var(--ok)');
         };
 
         window.deleteDraft = (id) => {
-            if (!confirm(`刪除草稿「${id.replace('|', ' ')}」？`)) return;
+            const label = id === ANON_ID ? '(未設床號姓名)' : id.replace('|', ' ');
+            if (!confirm(`刪除草稿「${label}」？`)) return;
             const list = getDraftList();
             delete list[id];
             setDraftList(list);
@@ -1768,8 +1784,10 @@
                 const d = new Date();
                 dateEl.value = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
             }
-            // Clear "last"
+            // Clear "last" snapshot and any orphan anonymous draft
             localStorage.removeItem(STORAGE_KEY_LAST);
+            const list = getDraftList();
+            if (list[ANON_ID]) { delete list[ANON_ID]; setDraftList(list); }
             setStatus('● 新病人', 'var(--text-light)');
             showToast('已開始新病人');
         };
