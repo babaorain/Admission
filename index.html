@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rehab Admission Board</title>
+    <title>Rehab Admission Board v2</title>
     <style>
         :root {
             --primary: #00796b;
@@ -16,61 +16,87 @@
             --text-light: #6b7280;
             --border: #d1d5db;
             --warn: #dc2626;
+            --warn-light: #fee2e2;
+            --ok: #16a34a;
             --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             --radius: 8px;
         }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #26a69a;
+                --primary-light: #1f3a37;
+                --primary-dark: #b2dfdb;
+                --bg: #0f172a;
+                --surface: #1e293b;
+                --text: #e5e7eb;
+                --text-light: #94a3b8;
+                --border: #475569;
+                --warn: #ef4444;
+                --warn-light: #3a1414;
+                --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            }
+            input, select, textarea { color-scheme: dark; }
+            select { background-color: #334155 !important; }
+            input[type="text"] { background-color: #334155 !important; color: var(--text); }
+            textarea { background-color: #334155 !important; color: var(--text); }
+            .seg-btn { background: #334155; color: var(--text-light); }
+            .calc-btn { background: #334155; color: var(--text-light); }
+            .cycle-btn { background: #334155; color: var(--text); }
+            .toggle-btn { background: #334155; color: var(--text-light); }
+            .mas-side { background: #1e293b; border-color: #475569; }
+            .mode-switch { background: #334155; }
+            .mode-btn.active { background: var(--surface); }
+            .pt-info input { background-color: #334155 !important; }
+        }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background: var(--bg);
             margin: 0;
             padding-bottom: 140px;
-            /* Space for FAB */
             color: var(--text);
             -webkit-tap-highlight-color: transparent;
             font-size: 16px;
             line-height: 1.5;
         }
 
-        /* Utility */
-        .mono {
-            font-family: "Courier New", Courier, monospace;
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        .mono { font-family: "Courier New", Courier, monospace; }
+        .hidden { display: none !important; }
 
         /* Sticky Header */
         .header {
             background: var(--surface);
-            padding: 12px 16px;
+            padding: 10px 12px;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
         }
 
         .pt-info {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .pt-info input {
-            padding: 10px;
+            padding: 9px 10px;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             font-weight: 600;
             background: #f9fafb;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            min-width: 0;
         }
 
         .pt-info input:focus {
             outline: 2px solid var(--primary);
             border-color: transparent;
-            background: #fff;
+            background: var(--surface);
         }
 
         /* Mode Switcher */
@@ -79,8 +105,7 @@
             width: 100%;
             background: #e5e7eb;
             border-radius: var(--radius);
-            padding: 4px;
-            box-sizing: border-box;
+            padding: 3px;
         }
 
         .mode-btn {
@@ -102,10 +127,29 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        /* Accordion / Sections */
+        /* Quick info bar — GCS sum / saved indicator */
+        .quick-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.78rem;
+            color: var(--text-light);
+            margin-top: 6px;
+        }
+        .quick-bar .save-status {
+            color: var(--ok);
+            font-weight: 600;
+        }
+        .quick-bar .gcs-sum {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.85rem;
+        }
+
+        /* Accordion */
         details {
             background: var(--surface);
-            margin: 12px 16px;
+            margin: 10px 12px;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
             overflow: hidden;
@@ -113,7 +157,7 @@
         }
 
         summary {
-            padding: 14px 16px;
+            padding: 13px 16px;
             font-weight: 700;
             cursor: pointer;
             list-style: none;
@@ -121,13 +165,11 @@
             justify-content: space-between;
             align-items: center;
             background: var(--surface);
-            font-size: 1.05rem;
+            font-size: 1.02rem;
             color: var(--primary-dark);
         }
 
-        summary::-webkit-details-marker {
-            display: none;
-        }
+        summary::-webkit-details-marker { display: none; }
 
         summary:after {
             content: '+';
@@ -138,91 +180,66 @@
 
         details[open] summary {
             background: var(--primary-light);
-            color: var(--primary-dark);
-            border-bottom: 1px solid #b2dfdb;
+            border-bottom: 1px solid var(--border);
         }
 
         details[open] summary:after {
-            content: '-';
+            content: '−';
             color: var(--primary);
         }
 
-        .content {
-            padding: 16px;
-        }
+        .content { padding: 14px; }
 
-        /* Labels & Layouts */
         .sec-label {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: var(--text-light);
             font-weight: 700;
-            margin: 20px 0 10px 0;
+            margin: 18px 0 10px 0;
             padding-bottom: 4px;
-            border-bottom: 2px solid #f3f4f6;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        .sec-label:first-child { margin-top: 0; }
+        .sec-label .actions { display: flex; gap: 4px; }
 
-        .sec-label:first-child {
-            margin-top: 0;
-        }
-
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-        }
-
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .grid-auto {
             display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 12px;
+            grid-template-columns: 90px 1fr;
+            gap: 10px;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        /* Custom UI Elements */
-        /* Segmented Buttons (Group) */
+        /* Segmented Buttons */
         .seg-group {
             display: flex;
             width: 100%;
             border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
-            background: white;
+            background: var(--surface);
         }
 
         .seg-btn {
             flex: 1;
             padding: 10px 4px;
-            background: white;
+            background: var(--surface);
             border: none;
             border-right: 1px solid var(--border);
             color: var(--text-light);
             font-weight: 600;
             cursor: pointer;
             font-size: 0.9rem;
-            transition: background 0.1s;
         }
 
-        .seg-btn:last-child {
-            border-right: none;
-        }
-
-        .seg-btn.active {
-            background: #546e7a;
-            color: white;
-        }
-
-        .seg-btn:active {
-            background: #cfd8dc;
-        }
+        .seg-btn:last-child { border-right: none; }
+        .seg-btn.active { background: #546e7a; color: white; }
 
         /* Toggle Pills */
         .toggle-btn {
@@ -232,13 +249,13 @@
             padding: 8px 12px;
             border: 1px solid var(--border);
             border-radius: 20px;
-            background: white;
+            background: var(--surface);
             cursor: pointer;
-            font-size: 0.9rem;
-            margin-right: 6px;
-            margin-bottom: 8px;
+            font-size: 0.88rem;
+            margin-right: 4px;
+            margin-bottom: 6px;
             color: var(--text-light);
-            transition: all 0.2s;
+            transition: all 0.15s;
             font-weight: 500;
         }
 
@@ -247,42 +264,33 @@
             color: white;
             border-color: var(--warn);
             font-weight: 700;
-            box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
         }
 
-        /* Specific override for Language/Positive items to use Primary color instead of Warn */
-        #lang_fluency.active,
-        #lang_rep.active,
-        #lang_comp.active,
-        #lang_name.active,
-        #co_trem_rest.active,
-        #co_trem_act.active,
-        #sen_anal.active {
+        #lang_fluency.active, #lang_rep.active, #lang_comp.active, #lang_name.active,
+        #co_trem_rest.active, #co_trem_act.active, #sen_anal.active {
             background: var(--primary);
             border-color: var(--primary);
         }
 
-        /* Inputs & Selects */
-        select,
-        input[type="text"] {
+        /* Inputs */
+        select, input[type="text"] {
             width: 100%;
-            padding: 10px;
+            padding: 9px 10px;
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            background: white;
-            box-sizing: border-box;
+            background: var(--surface);
             font-family: inherit;
             font-size: 0.95rem;
             appearance: none;
-            /* Modern look */
+            color: var(--text);
+        }
+
+        select {
             background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23374151%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
             background-repeat: no-repeat;
             background-position: right 10px top 50%;
             background-size: 10px auto;
-        }
-
-        input[type="text"] {
-            background-image: none;
+            padding-right: 28px;
         }
 
         textarea {
@@ -291,22 +299,23 @@
             border-radius: var(--radius);
             resize: vertical;
             padding: 10px;
-            box-sizing: border-box;
-            background: #fdfdfd;
+            background: var(--surface);
+            color: var(--text);
+            font-family: inherit;
         }
 
         /* Calc Buttons */
         .calc-btn {
-            padding: 8px;
+            padding: 7px 9px;
             border: 1px solid var(--border);
             border-radius: 4px;
-            background: #fff;
-            margin-right: 4px;
+            background: var(--surface);
+            margin-right: 3px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-light);
-            min-width: 32px;
+            min-width: 36px;
         }
 
         .calc-btn.active {
@@ -315,134 +324,140 @@
             border-color: var(--primary);
         }
 
-        /* Cycle Buttons for SCI Grids */
+        /* Cycle Buttons */
         .cycle-btn {
             width: 100%;
-            padding: 8px 4px;
+            padding: 9px 4px;
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            background: white;
+            background: var(--surface);
             font-size: 0.95rem;
             font-weight: 600;
             color: var(--text);
             cursor: pointer;
             text-align: center;
-            transition: background 0.1s, border-color 0.1s;
         }
 
-        .cycle-btn:active {
-            background: #e5e7eb;
-        }
+        /* MRC value coloring on cycle-btn */
+        .cycle-btn[data-mrc="0"], .cycle-btn[data-mrc="1"] { background: var(--warn-light); color: var(--warn); }
+        .cycle-btn[data-mrc="2"] { background: #fef3c7; color: #92400e; }
+        .cycle-btn[data-mrc="NT"] { background: #f3f4f6; color: var(--text-light); font-style: italic; }
 
         .btn-fill {
             background: #f0fdf4;
             color: #166534;
             border: 1px solid #bbf7d0;
-            padding: 4px 8px;
+            padding: 4px 9px;
             border-radius: 4px;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: bold;
             cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-fill.warn-fill { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+        .btn-fill.neutral-fill { background: #f9fafb; color: var(--text-light); border-color: var(--border); }
+
+        @media (prefers-color-scheme: dark) {
+            .btn-fill { background: #14271a; color: #86efac; border-color: #166534; }
+            .btn-fill.warn-fill { background: #2a1010; color: #fca5a5; border-color: #7f1d1d; }
+            .btn-fill.neutral-fill { background: #334155; color: var(--text-light); border-color: var(--border); }
         }
 
-        .btn-fill:active {
-            background: #dcfce7;
-        }
-
-        /* Specific Layouts */
-        .mas-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
+        /* MAS */
+        .mas-container { display: flex; flex-direction: column; gap: 10px; }
         .mas-side {
-            border: 1px solid #e5e7eb;
-            padding: 12px;
+            border: 1px solid var(--border);
+            padding: 10px;
             border-radius: 8px;
-            background: #fafafa;
+            background: var(--bg);
         }
-
         .mas-side-title {
             font-weight: 700;
             text-align: center;
-            margin-bottom: 10px;
-            color: var(--primary);
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 6px;
-        }
-
-        .mas-row {
-            display: grid;
-            grid-template-columns: 70px 1fr;
-            align-items: center;
             margin-bottom: 8px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 4px;
             font-size: 0.9rem;
         }
+        .mas-row {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.88rem;
+        }
 
-        /* Grids with Striping */
+        /* ASIA / Sensory grids */
         .asia-grid-header {
             display: grid;
-            grid-template-columns: 1fr 100px 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr 110px 1fr;
+            gap: 6px;
             font-weight: bold;
             text-align: center;
-            background: #e0f2f1;
+            background: var(--primary-light);
             color: var(--primary-dark);
-            padding: 8px 0;
+            padding: 6px 0;
             border-radius: 4px;
             margin-bottom: 4px;
+            font-size: 0.85rem;
         }
-
         .asia-row {
             display: grid;
-            grid-template-columns: 1fr 100px 1fr;
-            gap: 8px;
+            grid-template-columns: 1fr 110px 1fr;
+            gap: 6px;
             align-items: center;
-            padding: 6px 4px;
-            border-bottom: 1px solid #eee;
+            padding: 5px 4px;
+            border-bottom: 1px solid var(--border);
         }
-
-        .asia-row:nth-child(even) {
-            background-color: #fafafa;
-        }
-
         .dermatome-grid {
             display: grid;
-            grid-template-columns: 40px 1fr 1fr 1fr 1fr;
-            gap: 4px;
+            grid-template-columns: 36px 1fr 1fr 1fr 1fr;
+            gap: 3px;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             align-items: center;
-            padding: 4px 0;
-            border-bottom: 1px solid #eee;
+            padding: 3px 0;
+            border-bottom: 1px solid var(--border);
         }
-
-        .dermatome-grid:nth-child(odd) {
-            background-color: #fafafa;
+        .sensory-grid-header {
+            display: grid;
+            grid-template-columns: 36px 1fr 1fr 1fr 1fr;
+            gap: 3px;
+            text-align: center;
+            font-weight: bold;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 6px 0;
+            border-radius: 4px;
+            font-size: 0.78rem;
         }
 
         .hint {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             color: var(--primary);
-            margin-left: 8px;
             font-style: italic;
+            text-align: right;
+            line-height: 1.3;
         }
 
-        /* FAB Area */
+        /* FAB */
         .fab-area {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(5px);
-            padding: 16px;
-            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(8px);
+            padding: 12px;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.12);
             z-index: 200;
             display: flex;
-            gap: 12px;
+            gap: 8px;
             border-top: 1px solid var(--border);
+        }
+        @media (prefers-color-scheme: dark) {
+            .fab-area { background: rgba(30, 41, 59, 0.96); }
         }
 
         .btn-copy {
@@ -450,57 +465,100 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 14px;
+            padding: 13px;
             border-radius: var(--radius);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 121, 107, 0.3);
-            transition: transform 0.1s;
+            box-shadow: 0 3px 6px rgba(0, 121, 107, 0.3);
         }
+        .btn-copy:active { transform: scale(0.98); }
 
-        .btn-copy:active {
-            transform: scale(0.98);
-        }
-
-        .btn-reset {
+        .btn-secondary {
             flex: 1;
-            background: white;
-            color: var(--warn);
+            background: var(--surface);
+            color: var(--text);
             border: 2px solid var(--border);
             border-radius: var(--radius);
             font-weight: 700;
             cursor: pointer;
-        }
-
-        /* JOMAC formatting */
-        .jomac-row {
-            padding: 8px 0;
-            border-bottom: 1px dashed #eee;
-        }
-
-        .jomac-label {
             font-size: 0.9rem;
+        }
+        .btn-secondary.danger { color: var(--warn); }
+
+        /* JOMAC */
+        .jomac-row { padding: 7px 0; border-bottom: 1px dashed var(--border); }
+        .jomac-row:last-child { border-bottom: none; }
+        .jomac-label {
+            font-size: 0.85rem;
             font-weight: 700;
-            color: #546e7a;
-            margin-bottom: 6px;
+            color: var(--text-light);
+            margin-bottom: 5px;
         }
 
-        /* Add-on Section Styling */
-        .addon-item {
+        /* Barthel */
+        .bi-item {
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .bi-item:last-child { border-bottom: none; }
+        .bi-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
+            margin-bottom: 6px;
             justify-content: space-between;
-            background: #fff;
-            padding: 10px;
-            border: 1px solid #eee;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            gap: 8px;
+        }
+        .bi-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+            flex-shrink: 0;
         }
 
-        .addon-label {
+        /* BI total badge */
+        .bi-total-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: var(--primary-light);
+            border-radius: 8px;
+            color: var(--primary-dark);
+        }
+        .bi-total-num { font-weight: bold; font-size: 1.5rem; }
+        .bi-total-cat { font-weight: 600; font-size: 0.9rem; }
+
+        /* Tooltip-like badge for pad */
+        .badge-warn { color: var(--warn); font-weight: bold; }
+        .badge-ok { color: var(--ok); font-weight: bold; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--primary-dark);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 24px;
+            font-size: 0.9rem;
             font-weight: 600;
-            color: var(--text);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 300;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Responsive */
+        @media (max-width: 360px) {
+            .grid-auto { grid-template-columns: 75px 1fr; }
+            .mas-row { grid-template-columns: 50px 1fr; }
+            .toggle-btn { font-size: 0.82rem; padding: 7px 9px; }
         }
     </style>
 </head>
@@ -509,43 +567,52 @@
 
     <div class="header">
         <div class="pt-info">
-            <input type="text" id="pt_bed" placeholder="床號 Bed No." style="flex: 0.4;">
-            <input type="text" id="pt_name" placeholder="姓名 Name" style="flex: 1;">
+            <input type="text" id="pt_bed" placeholder="床號" style="flex: 0.5;">
+            <input type="text" id="pt_name" placeholder="姓名" style="flex: 1;">
+            <input type="text" id="pt_date" placeholder="日期" style="flex: 0.7;">
         </div>
         <div class="mode-switch">
-            <button class="mode-btn active" onclick="setMode('CVA')">CVA</button>
-            <button class="mode-btn" onclick="setMode('TBI')">TBI</button>
-            <button class="mode-btn" onclick="setMode('SCI')">SCI</button>
+            <button class="mode-btn active" data-mode="CVA" onclick="setMode('CVA', this)">CVA</button>
+            <button class="mode-btn" data-mode="TBI" onclick="setMode('TBI', this)">TBI</button>
+            <button class="mode-btn" data-mode="SCI" onclick="setMode('SCI', this)">SCI</button>
+        </div>
+        <div class="quick-bar">
+            <span class="gcs-sum" id="gcs_sum_disp">GCS: E4V5M6 = 15</span>
+            <span class="save-status" id="save_status">●&nbsp;自動儲存</span>
         </div>
     </div>
 
     <div id="app-container"></div>
 
-    <div style="margin: 12px 16px;">
-        <div class="sec-label">自費 / 共照項目 (Add-on)</div>
-        <div style="background: white; padding: 16px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div style="margin: 10px 12px;">
+        <div class="sec-label">自費 / 共照項目</div>
+        <div style="background: var(--surface); padding: 12px; border-radius: 8px; box-shadow: var(--shadow);">
             <div class="grid-2">
-                <button class="toggle-btn" id="addon_tcm" onclick="toggle(this)"
-                    style="width:100%; justify-content:center;">中醫 (-)</button>
-                <input type="text" id="addon_doc" placeholder="指定醫師 (選填)">
+                <button class="toggle-btn" id="addon_tcm" onclick="toggle(this)" style="width:100%; justify-content:center;">中醫 (-)</button>
+                <input type="text" id="addon_doc" placeholder="指定醫師">
             </div>
-            <div class="grid-2" style="margin-top:8px;">
-                <button class="toggle-btn" id="addon_ilib" onclick="toggle(this)"
-                    style="width:100%; justify-content:center;">ILIB (-)</button>
-                <button class="toggle-btn" id="addon_rtms" onclick="toggle(this)"
-                    style="width:100%; justify-content:center;">rTMS (-)</button>
+            <div class="grid-2" style="margin-top:6px;">
+                <button class="toggle-btn" id="addon_ilib" onclick="toggle(this)" style="width:100%; justify-content:center;">ILIB (-)</button>
+                <button class="toggle-btn" id="addon_rtms" onclick="toggle(this)" style="width:100%; justify-content:center;">rTMS (-)</button>
             </div>
         </div>
     </div>
 
     <div class="fab-area">
-        <button class="btn-reset" onclick="clearData()">🗑 重置</button>
+        <button class="btn-secondary danger" onclick="clearData()">🗑 重置</button>
+        <button class="btn-secondary" onclick="loadDraft()">📂 載入</button>
         <button class="btn-copy" onclick="copyNote()">📋 複製病歷</button>
     </div>
 
+    <div class="toast" id="toast"></div>
+
     <script>
-        // --- Config ---
+        // ============ Config ============
         let currentMode = 'CVA';
+        const STORAGE_KEY = 'rehab_board_v2_draft';
+        const STORAGE_DEBOUNCE = 600;
+        let saveTimer = null;
+
         const mpOpts = ['5', '4+', '4', '3', '2', '1', '0', 'NT'];
         const reflexOpts = ['++++', '+++', '++', '+', '0', 'NT'];
         const asiaOpts = ['5', '4', '3', '2', '1', '0', 'NT'];
@@ -553,16 +620,14 @@
         const brOpts = ['I', 'II', 'III', 'IV', 'V', 'VI', 'NT'];
         const masOpts = ['0', '1', '1+', '2', '3', '4', 'NT'];
         const balOpts = ['Good', 'Fair-Good', 'Fair', 'Poor-Fair', 'Poor', 'Assist', 'Zero', 'NT'];
+        const babinskiOpts = ['Plantar', 'Equivocal', "Babinski's sign", 'NT'];
+        const hoffmanOpts = ['-', '+', 'NT'];
 
-        // Make arrays globally accessible for the cycle function
-        window.opts = {
-            'asiaOpts': asiaOpts,
-            'sensoryOpts': sensoryOpts
-        };
+        window.opts = { 'asiaOpts': asiaOpts, 'sensoryOpts': sensoryOpts, 'mpOpts': mpOpts, 'reflexOpts': reflexOpts };
 
         const nliOpts = [];
         ['C', 'T', 'L', 'S'].forEach(r => {
-            let max = r == 'C' ? 8 : r == 'T' ? 12 : 5;
+            let max = r === 'C' ? 8 : r === 'T' ? 12 : 5;
             for (let i = 1; i <= max; i++) nliOpts.push(r + i);
         });
 
@@ -574,19 +639,19 @@
         ];
 
         const biItems = [
-            { k: 'feed', t: '1. 進食 Feeding', o: [10, 5, 0], d: { 10: '十秒吃一口，可自行進食或使用輔具進食', 5: '需要協助進食、切好食物、穿脫輔具', 0: '無法自行進食、NG' } },
+            { k: 'feed', t: '1. 進食 Feeding', o: [10, 5, 0], d: { 10: '十秒吃一口，可自行進食或使用輔具', 5: '需要協助進食、切好食物、穿脫輔具', 0: '無法自行進食、NG' } },
             { k: 'bath', t: '2. 洗澡 Bathing', o: [5, 0], d: { 5: '可以獨立完成', 0: '需他人協助完成沐浴' } },
-            { k: 'groom', t: '3. 個人衛生 Grooming', o: [5, 0], d: { 5: '可以自行刷牙、洗臉、洗手、刮鬍子', 0: '需要他人協助完成盥洗' } },
-            { k: 'dress', t: '4. 穿脫衣褲鞋襪 Dressing', o: [10, 5, 0], d: { 10: '可以獨立完成，必要時使用輔具', 5: '可以在幫助下，完成一半以上動作', 0: '完全需要他人幫助' } },
-            { k: 'bowel', t: '5. 大便控制 Bowel', o: [10, 5, 0], d: { 10: '不會失禁', 5: '偶爾失禁、每週小於1次', 0: '失禁或需要灌腸' } },
+            { k: 'groom', t: '3. 個人衛生 Grooming', o: [5, 0], d: { 5: '可自行刷牙、洗臉、洗手、刮鬍', 0: '需他人協助完成盥洗' } },
+            { k: 'dress', t: '4. 穿脫衣褲鞋襪 Dressing', o: [10, 5, 0], d: { 10: '可獨立完成（可用輔具）', 5: '幫助下完成一半以上動作', 0: '完全需他人幫助' } },
+            { k: 'bowel', t: '5. 大便控制 Bowel', o: [10, 5, 0], d: { 10: '不會失禁', 5: '偶爾失禁、每週小於1次', 0: '失禁或需灌腸' } },
             { k: 'blad', t: '6. 小便控制 Bladder', o: [10, 5, 0], d: { 10: '正常控制', 5: '偶爾失禁、每週小於1次', 0: '失禁或Foley' } },
-            { k: 'toilet', t: '7. 如廁 Toilet', o: [10, 5, 0], d: { 10: '可以獨立上廁所，且沒有安全上的顧慮', 5: '在協助下可以保持平衡整理衣物、或用衛生紙', 0: '完全需要他人協助' } },
-            { k: 'trans', t: '8. 移位 Transfer', o: [15, 10, 5, 0], d: { 15: '可自行完成，沒有安全疑慮', 10: '在移位過程中需少量提醒，有安全疑慮', 5: '可以自行坐起，但需協助才可移位', 0: '需他人協助才可坐起，需兩人協助才能移位' } },
-            { k: 'walk', t: '9. 行走 Walking', o: [15, 10, 5, 0], d: { 15: '獨立行走超過50米', 10: '需要一人幫助可行走超過50米', 5: '可以獨立推輪椅移動超過50米', 0: '無法移動或小於50米' } },
-            { k: 'stair', t: '10. 上下樓梯 Stairs', o: [10, 5, 0], d: { 10: '可以自行上下樓梯（扶手或拐杖）', 5: '需要稍微扶持、或口頭指導', 0: '無法上下樓梯' } }
+            { k: 'toilet', t: '7. 如廁 Toilet', o: [10, 5, 0], d: { 10: '可獨立上廁所，無安全顧慮', 5: '協助下平衡整理衣物或衛生紙', 0: '完全需他人協助' } },
+            { k: 'trans', t: '8. 移位 Transfer', o: [15, 10, 5, 0], d: { 15: '可自行完成，無安全疑慮', 10: '需少量提醒，有安全疑慮', 5: '可自行坐起，需協助移位', 0: '需他人協助坐起' } },
+            { k: 'walk', t: '9. 行走 Walking', o: [15, 10, 5, 0], d: { 15: '獨立行走超過50米', 10: '需一人幫助行走超過50米', 5: '可獨立推輪椅超過50米', 0: '無法移動或小於50米' } },
+            { k: 'stair', t: '10. 上下樓梯 Stairs', o: [10, 5, 0], d: { 10: '可自行上下樓梯（扶手或拐杖）', 5: '需稍微扶持或口頭指導', 0: '無法上下樓梯' } }
         ];
 
-        // --- Templates ---
+        // ============ Templates ============
         function getTemplateCN() {
             return `CRANIAL NERVES
  I: smell: no test
@@ -613,28 +678,12 @@
  VII: Wrinkle forehead: Intact
         Forcibly close eyes: No decreased
         Puff cheeks: Symmetric
- VIII: hearing: Weber’s test -> No lateralization
-                  Rinne’s test -> Bilateral AC > BC
+ VIII: hearing: Weber's test -> No lateralization
+                  Rinne's test -> Bilateral AC > BC
  IX, X: uvula position: Central position. Gag reflex:(+/+)
  XI: Sternocleidomastoid: Powerful
      Trapezius: Powerful
  XII: tongue deviation(-). Atrophy(-), Fibrillation(-).`;
-        }
-
-        function getTemplateSensoryDefault() {
-            return `SENSORY FUNCTION
-  Ant-lat system
-   Pin-prick: Symmetric
-   Temperature: No decreased
-  Post. column
-   Light touch: Symmetric
-   Vibration: Intact
-   Joint position: Intact
-  Two-point discrimination test:
-  Double stimulation test: No neglect
-  Stereognosis: Not done
-  Graphesthesia: Intact
-  Anal sensation: (+)`;
         }
 
         function getTemplateOther() {
@@ -646,8 +695,7 @@
  Bowel: sensation(+), self-voiding(+), sphincter control(+)`;
         }
 
-        // --- Render Functions ---
-
+        // ============ Render ============
         function render() {
             const container = document.getElementById('app-container');
             container.innerHTML = '';
@@ -657,9 +705,9 @@
             <div class="grid-auto">
                 <span style="font-weight:bold">GCS:</span>
                 <div style="display:flex; gap:5px; width:100%;">
-                    <select id="gcs_e"><option value="4">E4</option><option value="3">E3</option><option value="2">E2</option><option value="1">E1</option></select>
-                    <select id="gcs_v"><option value="5">V5</option><option value="4">V4</option><option value="3">V3</option><option value="2">V2</option><option value="1">V1</option><option value="T">Vt</option><option value="A">Va</option></select>
-                    <select id="gcs_m"><option value="6">M6</option><option value="5">M5</option><option value="4">M4</option><option value="3">M3</option><option value="2">M2</option><option value="1">M1</option></select>
+                    <select id="gcs_e" onchange="updateGCSSum()"><option value="4">E4</option><option value="3">E3</option><option value="2">E2</option><option value="1">E1</option></select>
+                    <select id="gcs_v" onchange="updateGCSSum()"><option value="5">V5</option><option value="4">V4</option><option value="3">V3</option><option value="2">V2</option><option value="1">V1</option><option value="T">Vt</option><option value="A">Va</option><option value="E">Ve</option></select>
+                    <select id="gcs_m" onchange="updateGCSSum()"><option value="6">M6</option><option value="5">M5</option><option value="4">M4</option><option value="3">M3</option><option value="2">M2</option><option value="1">M1</option></select>
                 </div>
             </div>
             <div class="grid-auto"><span style="font-weight:bold">Handedness:</span>
@@ -669,7 +717,12 @@
                 </div>
             </div>
             ${currentMode !== 'SCI' ? `
-            <div class="sec-label">Language (FRCN)</div>
+            <div class="sec-label">Language (FRCN)
+                <div class="actions">
+                    <button class="btn-fill" onclick="setLangAll(true)">全 (+)</button>
+                    <button class="btn-fill warn-fill" onclick="setLangAll(false)">全 (-)</button>
+                </div>
+            </div>
             <div class="grid-2">
                 <button class="toggle-btn active" id="lang_fluency" onclick="toggle(this)">Fluency (+)</button>
                 <button class="toggle-btn active" id="lang_rep" onclick="toggle(this)">Repetition (+)</button>
@@ -677,23 +730,28 @@
                 <button class="toggle-btn active" id="lang_name" onclick="toggle(this)">Naming (+)</button>
             </div>
             <div class="sec-label">Deficits</div>
-            <div style="margin-bottom:10px;">
+            <div style="margin-bottom:8px;">
                 <button class="toggle-btn" id="def_dysarthria" onclick="toggle(this)">Dysarthria (-)</button>
                 <button class="toggle-btn" id="def_aphasia" onclick="toggle(this)">Aphasia (-)</button>
                 <button class="toggle-btn" id="def_dysphagia" onclick="toggle(this)">Dysphagia (-)</button>
             </div>
             ${renderJOMAC()}
             ` : `
-            <div class="sec-label">Speech/Swallow</div>
+            <div class="sec-label">Speech / Swallow</div>
             <div>
                 <button class="toggle-btn" id="def_dysarthria" onclick="toggle(this)">Dysarthria (-)</button>
                 <button class="toggle-btn" id="def_dysphagia" onclick="toggle(this)">Dysphagia (-)</button>
             </div>`}
+            <div class="sec-label">Pain (NRS)</div>
+            <div class="grid-auto">
+                <span>分數 0–10:</span>
+                <input type="text" id="pain_nrs" placeholder="如：3 / right shoulder; 0 表無痛" inputmode="numeric">
+            </div>
         `;
             container.appendChild(createDetails("Mental Status", "sec_mental", mentalHtml, true));
 
             // 2. CN
-            let cnHtml = `<textarea id="cn_note" class="mono" rows="15" style="font-size:0.8rem;">${getTemplateCN()}</textarea>`;
+            let cnHtml = `<textarea id="cn_note" class="mono" rows="14" style="font-size:0.78rem;">${getTemplateCN()}</textarea>`;
             container.appendChild(createDetails("Cranial Nerves", "sec_cn", cnHtml, false));
 
             // 3. Motor
@@ -701,26 +759,28 @@
             if (currentMode === 'CVA') {
                 motorHtml += `
             <div class="sec-label">Brunnstrom Stage
-                <button class="toggle-btn" id="br_bilateral_btn" onclick="toggle(this); document.getElementById('br_bilateral_row').classList.toggle('hidden'); if(this.classList.contains('active')){document.getElementById('br_other_side').innerText = document.getElementById('br_side').value === 'Right' ? 'Left' : 'Right';}" style="margin-left:10px; padding:2px 8px; font-size:0.8rem; border-radius:4px;">Bilateral (-)</button>
+                <div class="actions">
+                    <button class="toggle-btn" id="br_bilateral_btn" onclick="toggleBilateralBR(this)" style="margin:0; padding:3px 9px; font-size:0.78rem; border-radius:4px;">Bilateral (-)</button>
+                </div>
             </div>
             <div class="grid-auto">
-                <select id="br_side" style="width:100px; font-weight:bold;" onchange="if(document.getElementById('br_bilateral_btn').classList.contains('active')) document.getElementById('br_other_side').innerText = this.value === 'Right' ? 'Left' : 'Right';"><option>Right</option><option>Left</option></select>
+                <select id="br_side" style="font-weight:bold;" onchange="syncBRSide()"><option>Right</option><option>Left</option></select>
                 <div style="display:flex; gap:5px; width:100%;">
-                    <select id="br_up">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Up: ${o}</option>`)}</select>
-                    <select id="br_ud">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Ud: ${o}</option>`)}</select>
-                    <select id="br_ll">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>LL: ${o}</option>`)}</select>
+                    <select id="br_up">${brOpts.map(o => `<option value="${o}" ${o === 'III' ? 'selected' : ''}>Up: ${o}</option>`).join('')}</select>
+                    <select id="br_ud">${brOpts.map(o => `<option value="${o}" ${o === 'III' ? 'selected' : ''}>Ud: ${o}</option>`).join('')}</select>
+                    <select id="br_ll">${brOpts.map(o => `<option value="${o}" ${o === 'III' ? 'selected' : ''}>LL: ${o}</option>`).join('')}</select>
                 </div>
             </div>
             <div class="grid-auto hidden" id="br_bilateral_row">
-                <span id="br_other_side" style="width:100px; font-weight:bold; text-align:center; display:inline-block; font-size:0.95rem;">Left</span>
+                <span id="br_other_side" style="font-weight:bold; text-align:center; font-size:0.95rem;">Left</span>
                 <div style="display:flex; gap:5px; width:100%;">
-                    <select id="br_o_up">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Up: ${o}</option>`)}</select>
-                    <select id="br_o_ud">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>Ud: ${o}</option>`)}</select>
-                    <select id="br_o_ll">${brOpts.map(o => `<option value="${o}" ${o == 'V' ? 'selected' : ''}>LL: ${o}</option>`)}</select>
+                    <select id="br_o_up">${brOpts.map(o => `<option value="${o}" ${o === 'III' ? 'selected' : ''}>Up: ${o}</option>`).join('')}</select>
+                    <select id="br_o_ud">${brOpts.map(o => `<option value="${o}" ${o === 'III' ? 'selected' : ''}>Ud: ${o}</option>`).join('')}</select>
+                    <select id="br_o_ll">${brOpts.map(o => `<option value="${o}" ${o === 'III' ? 'selected' : ''}>LL: ${o}</option>`).join('')}</select>
                 </div>
             </div>
             <div class="sec-label">General</div>
-            <div class="grid-auto"><span>MRS:</span><select id="mrs_val">${[0, 1, 2, 3, 4, 5].map(i => `<option>${i}</option>`).join('')}</select></div>
+            <div class="grid-auto"><span>mRS:</span><select id="mrs_val">${[0, 1, 2, 3, 4, 5].map(i => `<option ${i === 4 ? 'selected' : ''}>${i}</option>`).join('')}</select></div>
             <div class="grid-2">
                 <button class="toggle-btn" id="mus_atrophy" onclick="toggle(this)">Atrophy (-)</button>
                 <button class="toggle-btn" id="mus_fasc" onclick="toggle(this)">Fasciculation (-)</button>
@@ -748,21 +808,21 @@
                 motorHtml += `
             <div class="sec-label">ASIA Impairment Scale</div>
             <div class="grid-2">
-                <div><span style="font-size:0.8rem">Grade</span><select id="asia_grade"><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
-                <div><span style="font-size:0.8rem">NLI Level</span><select id="sci_nli"><option value="">Select...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select></div>
+                <div><span style="font-size:0.8rem;color:var(--text-light)">Grade</span><select id="asia_grade"><option>A</option><option>B</option><option>C</option><option>D</option><option>E</option></select></div>
+                <div><span style="font-size:0.8rem;color:var(--text-light)">NLI</span><select id="sci_nli"><option value="">Select…</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select></div>
             </div>
 
-            <div class="sec-label" style="display:flex; justify-content:space-between; align-items:center;">
-                <span>Key Muscles (Myotomes)</span>
-                <div>
-                    <button class="btn-fill" onclick="fillAll('asia_r_', '5')">R't All 5</button>
-                    <button class="btn-fill" onclick="fillAll('asia_l_', '5')">L't All 5</button>
+            <div class="sec-label">Key Muscles (Myotomes)
+                <div class="actions">
+                    <button class="btn-fill" onclick="fillAll('asia_r_', '5')">R 全 5</button>
+                    <button class="btn-fill" onclick="fillAll('asia_l_', '5')">L 全 5</button>
+                    <button class="btn-fill warn-fill" onclick="fillAll('asia_r_', '0'); fillAll('asia_l_', '0')">全 0</button>
                 </div>
             </div>
-            <div style="margin-bottom:5px; display:flex; gap:5px; align-items:center; font-size:0.85rem;">
-                <span>Motor Level:</span>
-                <select id="sci_ml_r"><option value="">R...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
-                <select id="sci_ml_l"><option value="">L...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
+            <div style="margin-bottom:6px; display:flex; gap:5px; align-items:center; font-size:0.85rem;">
+                <span>Motor Lv:</span>
+                <select id="sci_ml_r"><option value="">R…</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
+                <select id="sci_ml_l"><option value="">L…</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
             </div>
             <div class="asia-grid-header"><span>Right</span><span>Level</span><span>Left</span></div>
             ${renderASIARow('C5', 'Elbow Flex')}
@@ -778,8 +838,17 @@
             ${renderDTRGrid()}
             <div class="sec-label">Sphincter / Reflex</div>
             <div class="grid-2">
-                <input type="text" id="sci_anal_tone" placeholder="Anal Tone">
-                <input type="text" id="sci_bcr" placeholder="BC Reflex">
+                <select id="sci_anal_tone"><option value="">Anal tone…</option><option>Normal</option><option>Decreased</option><option>Absent</option><option>Hypertonic</option></select>
+                <select id="sci_bcr"><option value="">BC reflex…</option><option>+</option><option>-</option><option>NT</option></select>
+            </div>
+            <div class="grid-2" style="margin-top:6px;">
+                <select id="sci_vac"><option value="">VAC…</option><option>Present</option><option>Absent</option></select>
+                <select id="sci_dap"><option value="">DAP…</option><option>Present</option><option>Absent</option></select>
+            </div>
+            <div class="sec-label">Zone of Partial Preservation</div>
+            <div class="grid-2">
+                <input type="text" id="sci_zpp_r" placeholder="ZPP Right (motor/sensory)">
+                <input type="text" id="sci_zpp_l" placeholder="ZPP Left (motor/sensory)">
             </div>
             `;
             }
@@ -789,16 +858,17 @@
             let sensoryHtml = '';
             if (currentMode === 'SCI') {
                 sensoryHtml += `
-            <div style="margin-bottom:5px; display:flex; gap:5px; align-items:center; font-size:0.85rem;">
-                <span>Sensory Level:</span>
-                <select id="sci_sl_r"><option value="">R...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
-                <select id="sci_sl_l"><option value="">L...</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
+            <div style="margin-bottom:6px; display:flex; gap:5px; align-items:center; font-size:0.85rem;">
+                <span>Sensory Lv:</span>
+                <select id="sci_sl_r"><option value="">R…</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
+                <select id="sci_sl_l"><option value="">L…</option>${nliOpts.map(o => `<option>${o}</option>`).join('')}</select>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:5px; margin-bottom:5px;">
-                <button class="btn-fill" onclick="fillAll('sen_r_lt_', '2'); fillAll('sen_r_pp_', '2')">R't All 2</button>
-                <button class="btn-fill" onclick="fillAll('sen_l_lt_', '2'); fillAll('sen_l_pp_', '2')">L't All 2</button>
+            <div style="display:flex; justify-content:flex-end; gap:5px; margin-bottom:6px;">
+                <button class="btn-fill" onclick="fillAll('sen_r_lt_','2'); fillAll('sen_r_pp_','2')">R 全 2</button>
+                <button class="btn-fill" onclick="fillAll('sen_l_lt_','2'); fillAll('sen_l_pp_','2')">L 全 2</button>
+                <button class="btn-fill warn-fill" onclick="fillAll('sen_r_lt_','0'); fillAll('sen_l_lt_','0'); fillAll('sen_r_pp_','0'); fillAll('sen_l_pp_','0')">全 0</button>
             </div>
-            <div class="sensory-grid-header" style="display:grid; grid-template-columns:40px 1fr 1fr 1fr 1fr; gap:2px; text-align:center; font-weight:bold; background:#eee; padding:5px 0;">
+            <div class="sensory-grid-header">
                 <div>Lv</div><div>R-LT</div><div>L-LT</div><div>R-PP</div><div>L-PP</div>
             </div>
             ${renderSensoryRows(['C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'T1', 'T4', 'T10', 'T12', 'L1', 'L2', 'L3', 'L4', 'L5', 'S1', 'S2', 'S3'])}
@@ -808,75 +878,81 @@
             } else {
                 sensoryHtml += `
             <div class="sec-label">Ant-lat system</div>
-            <div class="grid-auto"><span>Pin-prick:</span><select id="sen_pp"><option>Symmetric</option><option>Impaired</option><option>Anesthesia</option></select></div>
+            <div class="grid-auto"><span>Pin-prick:</span><select id="sen_pp"><option>Symmetric</option><option>Decreased</option><option>Impaired</option><option>Anesthesia</option></select></div>
             <div class="grid-auto"><span>Temperature:</span><select id="sen_temp"><option>No decreased</option><option>Decreased</option><option>Loss</option></select></div>
-            
             <div class="sec-label">Post. column</div>
-            <div class="grid-auto"><span>Light touch:</span><select id="sen_lt"><option>Symmetric</option><option>Impaired</option><option>Anesthesia</option></select></div>
-            <div class="grid-auto"><span>Vibration:</span><select id="sen_vib"><option>Intact</option><option>Impaired</option><option>Loss</option></select></div>
-            <div class="grid-auto"><span>Joint position:</span><select id="sen_jp"><option>Intact</option><option>Impaired</option><option>Loss</option></select></div>
-
-            <div class="sec-label">Other Tests</div>
-            <div class="grid-auto"><span>2-point disc.:</span><input type="text" id="sen_2pd" placeholder="Value"></div>
-            <div class="grid-auto"><span>Double stim.:</span><select id="sen_double"><option>No neglect</option><option>Neglect</option></select></div>
+            <div class="grid-auto"><span>Light touch:</span><select id="sen_lt"><option>Symmetric</option><option>Decreased</option><option>Impaired</option><option>Anesthesia</option></select></div>
+            <div class="grid-auto"><span>Vibration:</span><select id="sen_vib"><option>Intact</option><option>Decreased</option><option>Impaired</option><option>Loss</option></select></div>
+            <div class="grid-auto"><span>Joint pos.:</span><select id="sen_jp"><option>Intact</option><option>Decreased</option><option>Impaired</option><option>Loss</option></select></div>
+            <div class="sec-label">Other</div>
+            <div class="grid-auto"><span>2-point:</span><input type="text" id="sen_2pd" placeholder="Value (mm)"></div>
+            <div class="grid-auto"><span>Double stim:</span><select id="sen_double"><option>No neglect</option><option>Neglect</option></select></div>
             <div class="grid-auto"><span>Stereognosis:</span><select id="sen_stereo"><option>Not done</option><option>Intact</option><option>Impaired</option></select></div>
             <div class="grid-auto"><span>Graphesthesia:</span><input type="text" id="sen_graph" value="Intact"></div>
-            <div class="grid-auto"><span>Anal sensation:</span><button class="toggle-btn active" id="sen_anal" onclick="toggle(this)">Anal sensation (+)</button></div>
+            <div class="grid-auto"><span>Anal sens.:</span><button class="toggle-btn active" id="sen_anal" onclick="toggle(this)" style="justify-self:start;">Anal sensation (+)</button></div>
             `;
             }
             container.appendChild(createDetails("Sensory Function", "sec_sensory", sensoryHtml, false));
 
             // 5. Coordination
-            let coordHtml = renderCoordinationInputs();
-            container.appendChild(createDetails("Coordination & Gait", "sec_coord", coordHtml, false));
+            container.appendChild(createDetails("Coordination & Gait", "sec_coord", renderCoordinationInputs(), false));
 
             // 6. Other
-            let otherHtml = `
-        <textarea id="other_note" class="mono" rows="8">${getTemplateOther()}</textarea>
-        `;
+            let otherHtml = `<textarea id="other_note" class="mono" rows="7" style="font-size:0.78rem;">${getTemplateOther()}</textarea>`;
             container.appendChild(createDetails("Other Findings", "sec_other", otherHtml, false));
 
-            // 7. Functional
+            // 7. Functional — defaults changed to clinically realistic for new admission
+            const fSel = (id, sel) => `<select id="${id}">${['Good', 'Fair', 'Poor', 'Assist'].map(o => `<option ${o === sel ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
             let funcHtml = `
-        <div class="grid-auto"><span>Roll L:</span><select id="func_roll_l"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
-        <div class="grid-auto"><span>Roll R:</span><select id="func_roll_r"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
-        <div class="grid-auto"><span>Sit up:</span><select id="func_sit"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
-        <div class="grid-auto"><span>Stand up:</span><select id="func_stand"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
-        <div class="grid-auto"><span>Transfer:</span><select id="func_trans"><option>Good</option><option>Fair</option><option>Poor</option><option>Assist</option></select></div>
+        <div class="sec-label">Mobility
+            <div class="actions">
+                <button class="btn-fill" onclick="setFuncAll('Good')">全 Good</button>
+                <button class="btn-fill neutral-fill" onclick="setFuncAll('Fair')">全 Fair</button>
+                <button class="btn-fill warn-fill" onclick="setFuncAll('Poor')">全 Poor</button>
+            </div>
+        </div>
+        <div class="grid-auto"><span>Roll L:</span>${fSel('func_roll_l', 'Fair')}</div>
+        <div class="grid-auto"><span>Roll R:</span>${fSel('func_roll_r', 'Fair')}</div>
+        <div class="grid-auto"><span>Sit up:</span>${fSel('func_sit', 'Fair')}</div>
+        <div class="grid-auto"><span>Stand up:</span>${fSel('func_stand', 'Poor')}</div>
+        <div class="grid-auto"><span>Transfer:</span>${fSel('func_trans', 'Assist')}</div>
         <div class="sec-label">Balance (Static / Dynamic)</div>
         <div class="grid-auto">
             <span>Sitting:</span>
             <div class="grid-2">
-                <select id="bal_sit_s">${balOpts.map(o => `<option value="${o}" ${o == 'Good' ? 'selected' : ''}>S: ${o}</option>`)}</select>
-                <select id="bal_sit_d">${balOpts.map(o => `<option value="${o}" ${o == 'Good' ? 'selected' : ''}>D: ${o}</option>`)}</select>
+                <select id="bal_sit_s">${balOpts.map(o => `<option value="${o}" ${o === 'Fair' ? 'selected' : ''}>S: ${o}</option>`).join('')}</select>
+                <select id="bal_sit_d">${balOpts.map(o => `<option value="${o}" ${o === 'Poor' ? 'selected' : ''}>D: ${o}</option>`).join('')}</select>
             </div>
         </div>
         <div class="grid-auto">
             <span>Standing:</span>
             <div class="grid-2">
-                <select id="bal_stand_s">${balOpts.map(o => `<option value="${o}" ${o == 'Fair' ? 'selected' : ''}>S: ${o}</option>`)}</select>
-                <select id="bal_stand_d">${balOpts.map(o => `<option value="${o}" ${o == 'Poor' ? 'selected' : ''}>D: ${o}</option>`)}</select>
+                <select id="bal_stand_s">${balOpts.map(o => `<option value="${o}" ${o === 'Poor' ? 'selected' : ''}>S: ${o}</option>`).join('')}</select>
+                <select id="bal_stand_d">${balOpts.map(o => `<option value="${o}" ${o === 'Zero' ? 'selected' : ''}>D: ${o}</option>`).join('')}</select>
             </div>
         </div>
         `;
             container.appendChild(createDetails("Functional Status", "sec_func", funcHtml, true));
 
             // 8. Barthel
-            let biHtml = `<div style="display:grid; gap:16px;">`;
+            let biHtml = `<div>`;
             biItems.forEach(i => {
-                biHtml += `<div>
-                <div style="display:flex; align-items:center; margin-bottom:6px; justify-content:space-between;">
-                    <div style="font-size:0.9rem; font-weight:bold;">${i.t}</div>
+                biHtml += `<div class="bi-item">
+                <div class="bi-header">
+                    <div class="bi-title">${i.t}</div>
                     <div class="hint" id="hint_bi_${i.k}"></div>
                 </div>
                 <div class="seg-group" data-key="bi_${i.k}">
-                    ${i.o.map(val => `<button class="seg-btn ${val == i.o[0] ? 'active' : ''}" onclick="set(this); updateBIHint('${i.k}'); calcBI();">${val}</button>`).join('')}
+                    ${i.o.map((val, idx) => `<button class="seg-btn ${idx === i.o.length - 1 ? 'active' : ''}" onclick="set(this); updateBIHint('${i.k}'); calcBI();">${val}</button>`).join('')}
                 </div>
             </div>`;
             });
-            biHtml += `<div style="text-align:right; margin-top:10px; color:var(--primary);">
-            <div style="font-weight:bold; font-size:1.4rem;">Total: <span id="bi_total">100</span></div>
-            <div id="bi_cat" style="font-weight:bold; font-size:1rem; color:#444;">Complete Independence</div>
+            biHtml += `<div class="bi-total-box">
+            <div>
+                <div style="font-size:0.78rem; color: var(--text-light); text-transform:uppercase; letter-spacing:0.05em;">Barthel Total</div>
+                <div class="bi-total-cat" id="bi_cat">Total Dependency</div>
+            </div>
+            <div class="bi-total-num" id="bi_total">0</div>
         </div></div>`;
             container.appendChild(createDetails("Barthel Index", "sec_bi", biHtml, true));
 
@@ -888,26 +964,29 @@
             <button class="toggle-btn" id="tube_tracho" onclick="toggle(this)">Tracho (-)</button>
         </div>
         <div class="sec-label">Note</div>
-        <textarea id="local_note" rows="2"></textarea>
+        <textarea id="local_note" rows="3" placeholder="如：傷口、壓瘡、IV line、其他特殊狀況"></textarea>
         `;
             container.appendChild(createDetails("Local Findings", "sec_local", localHtml, true));
 
-            // Init
+            // Init computed
             biItems.forEach(i => updateBIHint(i.k));
             calcBI();
+            updateGCSSum();
             toggleInputVisibility('jo_judg');
             toggleInputVisibility('jo_orient');
+
+            // Attach autosave listeners after render
+            attachAutosaveListeners();
         }
 
-        // --- JOMAC ---
+        // ============ JOMAC ============
         function renderJOMAC() {
             const calcBtns = [93, 86, 79, 72, 65];
-            let calcHtml = `<div id="calc_btn_group" style="display:flex;">`;
+            let calcHtml = `<div id="calc_btn_group" style="display:flex; flex-wrap:wrap; gap:3px;">`;
             calcBtns.forEach(n => {
                 calcHtml += `<button class="calc-btn" onclick="toggleCalc(this, ${n})">${n}</button>`;
             });
             calcHtml += `</div>`;
-
             return `
         <div class="sec-label">JOMAC</div>
         <div class="jomac-row">
@@ -920,65 +999,64 @@
         <div class="jomac-row">
             <div class="jomac-label">Orientation</div>
             <select id="jo_orient" onchange="toggleInputVisibility(this.id)">
-                <option value="Intact">To time/person/place</option>
+                <option value="Intact">To time / person / place</option>
                 <option value="Impaired">Impaired</option>
             </select>
         </div>
         <div class="jomac-row">
-            <div class="jomac-label">Memory - Immediate</div>
+            <div class="jomac-label">Memory — Immediate</div>
             <div class="grid-auto">
-                <select id="jo_mem_imm_res" style="width:100px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
+                <select id="jo_mem_imm_res" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
                 <input type="text" id="jo_mem_imm_cont" value="紅色V、快樂V、腳踏車V">
             </div>
         </div>
         <div class="jomac-row">
-            <div class="jomac-label">Memory - Recent</div>
+            <div class="jomac-label">Memory — Recent</div>
             <div class="grid-auto">
-                <select id="jo_mem_rec_res" style="width:100px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
+                <select id="jo_mem_rec_res" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
                 <input type="text" id="jo_mem_rec_cont" value="今天早餐吃蛋餅">
             </div>
         </div>
         <div class="jomac-row">
-            <div class="jomac-label">Memory - Long Term</div>
+            <div class="jomac-label">Memory — Long Term</div>
             <div class="grid-auto">
-                <select id="jo_mem_lt_res" style="width:100px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
+                <select id="jo_mem_lt_res" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
                 <input type="text" id="jo_mem_lt_cont" value="出生年月日">
             </div>
         </div>
         <div class="jomac-row">
             <div class="jomac-label">Abstract Thinking</div>
             <div class="grid-auto">
-                <select id="jo_abs_res" style="width:120px;" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
-                <input type="text" id="jo_abs_cont" value="蘋果和香蕉都是什麼是。是水果">
+                <select id="jo_abs_res" onchange="toggleInputVisibility(this.id)"><option value="Intact">Intact</option><option value="Impaired">Impaired</option></select>
+                <input type="text" id="jo_abs_cont" value="蘋果和香蕉都是水果">
             </div>
         </div>
         <div class="jomac-row">
-            <div class="jomac-label">Calculation (100-7)</div>
+            <div class="jomac-label">Calculation (100−7)</div>
             <div class="grid-auto">
-                <select id="jo_calc_res" style="width:120px;"><option value="Impaired">Impaired</option><option value="Intact">Intact</option></select>
+                <select id="jo_calc_res"><option value="Impaired">Impaired</option><option value="Intact">Intact</option></select>
                 ${calcHtml}
             </div>
         </div>
         `;
         }
 
-        // --- Helpers ---
+        // ============ Helpers ============
         window.toggleInputVisibility = (id) => {
             const el = document.getElementById(id);
             if (!el) return;
-            let parent = el.parentElement;
-            let input = parent.querySelector('input[type="text"]');
-            const val = el.value;
-            if (val === "Impaired") {
-                if (input) input.classList.add('hidden');
-            } else {
-                if (input) input.classList.remove('hidden');
-            }
-        }
+            const parent = el.parentElement;
+            if (!parent) return;
+            const input = parent.querySelector('input[type="text"]');
+            if (!input) return;
+            if (el.value === "Impaired") input.classList.add('hidden');
+            else input.classList.remove('hidden');
+        };
 
         window.toggleCalc = (btn, num) => {
             const group = document.getElementById('calc_btn_group');
-            const btns = group.querySelectorAll('.calc-btn');
+            if (!group) return;
+            const btns = Array.from(group.querySelectorAll('.calc-btn'));
             const nums = [93, 86, 79, 72, 65];
             const idx = nums.indexOf(num);
             const isActive = btn.classList.contains('active');
@@ -992,61 +1070,65 @@
                     else b.classList.remove('active');
                 });
             }
-        }
+            scheduleSave();
+        };
 
         function createDetails(title, id, html, isOpen) {
             const d = document.createElement('details');
+            d.id = id;
             if (isOpen) d.setAttribute('open', '');
             d.innerHTML = `<summary>${title}</summary><div class="content">${html}</div>`;
             return d;
         }
 
         function renderMPGrid() {
-            const ops = mpOpts.map(o => `<option ${o === '5' ? 'selected' : ''}>${o}</option>`).join('');
+            const sel = (id) => `<select id="${id}">${mpOpts.map(o => `<option>${o}</option>`).join('')}</select>`;
             return `
-        <div class="sec-label">Muscle Power (0-5)</div>
-        <div class="grid-3" style="text-align:center; font-size:0.8rem; font-weight:bold; margin-bottom:5px;">
+        <div class="sec-label">Muscle Power (MRC 0–5)
+            <div class="actions">
+                <button class="btn-fill" onclick="fillMP('5')">全 5</button>
+                <button class="btn-fill warn-fill" onclick="fillMP('3')">全 3</button>
+            </div>
+        </div>
+        <div class="grid-3" style="text-align:center; font-size:0.78rem; color:var(--text-light); font-weight:bold; margin-bottom:5px;">
             <span>Region</span><span>Right</span><span>Left</span>
         </div>
-        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
-            <span>Up Prox</span><select id="mp_up_r">${ops}</select><select id="mp_up_l">${ops}</select>
-        </div>
-        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
-            <span>Up Dist</span><select id="mp_ud_r">${ops}</select><select id="mp_ud_l">${ops}</select>
-        </div>
-        <div class="grid-3" style="align-items:center; margin-bottom:5px;">
-            <span>Low Prox</span><select id="mp_lp_r">${ops}</select><select id="mp_lp_l">${ops}</select>
-        </div>
-        <div class="grid-3" style="align-items:center;">
-            <span>Low Dist</span><select id="mp_ld_r">${ops}</select><select id="mp_ld_l">${ops}</select>
-        </div>`;
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;"><span style="font-size:0.85rem;">Up Prox</span>${sel('mp_up_r')}${sel('mp_up_l')}</div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;"><span style="font-size:0.85rem;">Up Dist</span>${sel('mp_ud_r')}${sel('mp_ud_l')}</div>
+        <div class="grid-3" style="align-items:center; margin-bottom:5px;"><span style="font-size:0.85rem;">Lo Prox</span>${sel('mp_lp_r')}${sel('mp_lp_l')}</div>
+        <div class="grid-3" style="align-items:center;"><span style="font-size:0.85rem;">Lo Dist</span>${sel('mp_ld_r')}${sel('mp_ld_l')}</div>`;
         }
 
         function renderDTRGrid() {
-            const ops = reflexOpts.map(o => `<option ${o === '++' ? 'selected' : ''}>${o}</option>`).join('');
+            const sel = (id) => `<select id="${id}">${reflexOpts.map(o => `<option ${o === '++' ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
             const items = ['Biceps', 'Triceps', 'Brach', 'Knee', 'Ankle'];
-            let html = `<div class="sec-label">DTR</div><div class="grid-3" style="font-size:0.8rem; text-align:center; font-weight:bold; margin-bottom:5px;"><span></span><span>Rt</span><span>Lt</span></div>`;
+            let html = `<div class="sec-label">DTR
+            <div class="actions">
+                <button class="btn-fill" onclick="fillDTR('++')">全 ++</button>
+                <button class="btn-fill warn-fill" onclick="fillDTR('+++')">全 +++</button>
+            </div>
+        </div>
+        <div class="grid-3" style="font-size:0.78rem; color:var(--text-light); text-align:center; font-weight:bold; margin-bottom:5px;"><span></span><span>Rt</span><span>Lt</span></div>`;
             items.forEach(i => {
                 const k = i.toLowerCase();
                 html += `<div class="grid-3" style="margin-bottom:4px; align-items:center;">
-                <span style="font-size:0.85rem;">${i}</span>
-                <select id="dtr_${k}_r">${ops}</select>
-                <select id="dtr_${k}_l">${ops}</select>
-            </div>`;
+                <span style="font-size:0.85rem;">${i}</span>${sel(`dtr_${k}_r`)}${sel(`dtr_${k}_l`)}</div>`;
             });
             return html;
         }
 
         function renderPathoReflex() {
+            const babOpts = babinskiOpts.map(o => `<option>${o}</option>`).join('');
+            const hofOpts = hoffmanOpts.map(o => `<option>${o}</option>`).join('');
             return `
         <div class="sec-label">Pathological Reflex</div>
         <div class="grid-auto">
             <span>Babinski:</span>
-            <div class="grid-2"><input type="text" id="bab_r" value="Plantar"><input type="text" id="bab_l" value="Plantar"></div>
+            <div class="grid-2"><select id="bab_r">${babOpts}</select><select id="bab_l">${babOpts}</select></div>
         </div>
         <div class="grid-auto">
             <span>Hoffman:</span>
-            <div class="grid-2"><input type="text" id="hof_r" value="-"><input type="text" id="hof_l" value="-"></div>
+            <div class="grid-2"><select id="hof_r">${hofOpts}</select><select id="hof_l">${hofOpts}</select></div>
         </div>`;
         }
 
@@ -1058,28 +1140,22 @@
         <div class="mas-container">
             <div class="grid-2">
                 <div class="mas-side">
-                    <div class="mas-side-title">Right Upper</div>
-                    ${row('Elbow', 'mas_r_elb')}
-                    ${row('Wrist', 'mas_r_wri')}
-                    ${row('Finger', 'mas_r_fin')}
+                    <div class="mas-side-title">R Upper</div>
+                    ${row('Elbow', 'mas_r_elb')}${row('Wrist', 'mas_r_wri')}${row('Finger', 'mas_r_fin')}
                 </div>
                 <div class="mas-side">
-                    <div class="mas-side-title">Left Upper</div>
-                    ${row('Elbow', 'mas_l_elb')}
-                    ${row('Wrist', 'mas_l_wri')}
-                    ${row('Finger', 'mas_l_fin')}
+                    <div class="mas-side-title">L Upper</div>
+                    ${row('Elbow', 'mas_l_elb')}${row('Wrist', 'mas_l_wri')}${row('Finger', 'mas_l_fin')}
                 </div>
             </div>
             <div class="grid-2">
                 <div class="mas-side">
-                    <div class="mas-side-title">Right Lower</div>
-                    ${row('Knee', 'mas_r_kne')}
-                    ${row('Ankle', 'mas_r_ank')}
+                    <div class="mas-side-title">R Lower</div>
+                    ${row('Knee', 'mas_r_kne')}${row('Ankle', 'mas_r_ank')}
                 </div>
                 <div class="mas-side">
-                    <div class="mas-side-title">Left Lower</div>
-                    ${row('Knee', 'mas_l_kne')}
-                    ${row('Ankle', 'mas_l_ank')}
+                    <div class="mas-side-title">L Lower</div>
+                    ${row('Knee', 'mas_l_kne')}${row('Ankle', 'mas_l_ank')}
                 </div>
             </div>
         </div>`;
@@ -1089,7 +1165,7 @@
             return `
         <div class="asia-row">
             <button id="asia_r_${level}" class="cycle-btn" onclick="cycleBtn(this, 'asiaOpts')">5</button>
-            <div style="text-align:center; font-size:0.75rem;"><b>${level}</b><br><span style="color:#666">${musc}</span></div>
+            <div style="text-align:center; font-size:0.74rem;"><b>${level}</b><br><span style="color:var(--text-light)">${musc}</span></div>
             <button id="asia_l_${level}" class="cycle-btn" onclick="cycleBtn(this, 'asiaOpts')">5</button>
         </div>`;
         }
@@ -1098,7 +1174,7 @@
             let html = '';
             levels.forEach(l => {
                 html += `<div class="dermatome-grid">
-                <div>${l}</div>
+                <div><b>${l}</b></div>
                 <button id="sen_r_lt_${l}" class="cycle-btn" onclick="cycleBtn(this, 'sensoryOpts')">2</button>
                 <button id="sen_l_lt_${l}" class="cycle-btn" onclick="cycleBtn(this, 'sensoryOpts')">2</button>
                 <button id="sen_r_pp_${l}" class="cycle-btn" onclick="cycleBtn(this, 'sensoryOpts')">2</button>
@@ -1111,82 +1187,154 @@
         function renderCoordinationInputs() {
             const dysOpts = ['No dysmetria', 'Dysmetria', 'Tremor', 'Ataxia', 'NT'].map(o => `<option>${o}</option>`).join('');
             return `
-        <div style="margin-bottom:10px; font-weight:bold;">Tremor</div>
+        <div class="sec-label">Tremor</div>
         <div class="grid-auto"><span>Resting:</span><select id="co_trem_rest"><option>Resting tremor(-)</option><option>Resting tremor(+)</option><option>NT</option></select></div>
         <div class="grid-auto"><span>Action:</span><select id="co_trem_act"><option>Action tremor(-)</option><option>Action tremor(+)</option><option>NT</option></select></div>
-
-        <div style="margin:10px 0; font-weight:bold; border-bottom:1px solid #eee;">Limb Coordination</div>
-        <div class="grid-3" style="font-size:0.8rem; text-align:center; font-weight:bold; margin-bottom:5px;"><span>Test</span><span>Right</span><span>Left</span></div>
+        <div class="sec-label">Limb Coordination</div>
+        <div class="grid-3" style="font-size:0.78rem; color:var(--text-light); text-align:center; font-weight:bold; margin-bottom:5px;"><span>Test</span><span>Right</span><span>Left</span></div>
         <div class="grid-3" style="align-items:center; margin-bottom:5px;">
             <span style="font-size:0.85rem;">FNF</span>
-            <select id="co_fnf_r">${dysOpts}</select>
-            <select id="co_fnf_l">${dysOpts}</select>
+            <select id="co_fnf_r">${dysOpts}</select><select id="co_fnf_l">${dysOpts}</select>
         </div>
         <div class="grid-3" style="align-items:center; margin-bottom:5px;">
             <span style="font-size:0.85rem;">HKS</span>
-            <select id="co_hks_r">${dysOpts}</select>
-            <select id="co_hks_l">${dysOpts}</select>
+            <select id="co_hks_r">${dysOpts}</select><select id="co_hks_l">${dysOpts}</select>
         </div>
         <div class="grid-3" style="align-items:center; margin-bottom:5px;">
             <span style="font-size:0.85rem;">RAM</span>
             <select id="co_ram_r" style="font-size:0.8rem"><option>No dysdiadochokinesia</option><option>Impaired</option><option>NT</option></select>
             <select id="co_ram_l" style="font-size:0.8rem"><option>No dysdiadochokinesia</option><option>Impaired</option><option>NT</option></select>
         </div>
-
-        <div style="margin:10px 0; font-weight:bold; border-bottom:1px solid #eee;">Gait / Balance</div>
+        <div class="sec-label">Gait / Balance</div>
         <div class="grid-auto"><span>Romberg:</span><select id="co_romberg"><option>Negative (no sway with eyes closed)</option><option>Positive</option><option>NT</option></select></div>
         <div class="grid-auto"><span>Truncal:</span><select id="co_trunk"><option>No truncal ataxia</option><option>Truncal ataxia</option><option>NT</option></select></div>
         <div class="grid-auto"><span>Tandem:</span><select id="co_tandem"><option>Did not test</option><option>Impaired</option><option>Good</option><option>NT</option></select></div>
-        <div class="grid-auto"><span>Gait:</span><select id="co_gait"><option>Walk without device</option><option>Walk with cane</option><option>Walker</option><option>Wheelchair</option><option>Bedridden</option><option>NT</option></select></div>
-        <div class="grid-auto"><span>Balance:</span><select id="co_bal"><option>Good balance</option><option>Fair balance</option><option>Poor balance</option><option>NT</option></select></div>
+        <div class="grid-auto"><span>Gait:</span><select id="co_gait"><option>Bedridden</option><option>Wheelchair</option><option>Walker</option><option>Walk with cane</option><option>Walk without device</option><option>NT</option></select></div>
+        <div class="grid-auto"><span>Balance:</span><select id="co_bal"><option>Poor balance</option><option>Fair balance</option><option>Good balance</option><option>NT</option></select></div>
         `;
         }
 
-        // --- Logic ---
+        // ============ Logic ============
         window.cycleBtn = (btn, arrName) => {
             const arr = window.opts[arrName];
             if (!arr) return;
-            let current = btn.innerText.trim();
-            let idx = arr.indexOf(current);
-            let nextIdx = (idx + 1) % arr.length;
-            btn.innerText = arr[nextIdx];
-        }
+            const current = btn.innerText.trim();
+            const idx = arr.indexOf(current);
+            const nextIdx = (idx + 1) % arr.length;
+            const next = arr[nextIdx];
+            btn.innerText = next;
+            // Color tagging for muscle power
+            if (arrName === 'asiaOpts') btn.setAttribute('data-mrc', next);
+            scheduleSave();
+        };
 
         window.fillAll = (prefix, val) => {
             document.querySelectorAll(`[id^="${prefix}"]`).forEach(btn => {
                 if (btn.tagName === 'BUTTON') {
                     btn.innerText = val;
+                    btn.setAttribute('data-mrc', val);
                 }
             });
-        }
+            scheduleSave();
+        };
 
-        window.setMode = (mode) => {
+        window.fillMP = (val) => {
+            ['mp_up_r', 'mp_up_l', 'mp_ud_r', 'mp_ud_l', 'mp_lp_r', 'mp_lp_l', 'mp_ld_r', 'mp_ld_l'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            });
+            scheduleSave();
+        };
+
+        window.fillDTR = (val) => {
+            ['biceps', 'triceps', 'brach', 'knee', 'ankle'].forEach(part => {
+                ['r', 'l'].forEach(side => {
+                    const el = document.getElementById(`dtr_${part}_${side}`);
+                    if (el) el.value = val;
+                });
+            });
+            scheduleSave();
+        };
+
+        window.setLangAll = (positive) => {
+            ['lang_fluency', 'lang_rep', 'lang_comp', 'lang_name'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (!btn) return;
+                const name = btn.innerText.split(' (')[0];
+                if (positive) {
+                    btn.classList.add('active');
+                    btn.innerText = name + ' (+)';
+                } else {
+                    btn.classList.remove('active');
+                    btn.innerText = name + ' (-)';
+                }
+            });
+            scheduleSave();
+        };
+
+        window.setFuncAll = (val) => {
+            ['func_roll_l', 'func_roll_r', 'func_sit', 'func_stand', 'func_trans'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = val;
+            });
+            scheduleSave();
+        };
+
+        window.toggleBilateralBR = (btn) => {
+            toggle(btn);
+            const row = document.getElementById('br_bilateral_row');
+            row.classList.toggle('hidden');
+            syncBRSide();
+        };
+
+        window.syncBRSide = () => {
+            const sideSel = document.getElementById('br_side');
+            const otherEl = document.getElementById('br_other_side');
+            if (sideSel && otherEl) {
+                otherEl.innerText = sideSel.value === 'Right' ? 'Left' : 'Right';
+            }
+        };
+
+        window.setMode = (mode, btn) => {
+            if (mode === currentMode) return;
+            // Save state before switching
+            const savedState = collectAllState();
             currentMode = mode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            if (btn) btn.classList.add('active');
+            else document.querySelector(`.mode-btn[data-mode="${mode}"]`)?.classList.add('active');
             render();
-        }
+            // Restore overlapping fields
+            restoreState(savedState);
+            scheduleSave();
+        };
+
         window.set = (btn) => {
             btn.parentElement.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-        }
+            scheduleSave();
+        };
+
         window.toggle = (btn) => {
             btn.classList.toggle('active');
             const txt = btn.innerText;
-            // Split by ' (' to handle multi-word names correctly
             const name = txt.split(' (')[0];
             btn.innerText = btn.classList.contains('active') ? name + " (+)" : name + " (-)";
-        }
+            scheduleSave();
+        };
+
         window.updateBIHint = (key) => {
             const item = biItems.find(i => i.k === key);
             const grp = document.querySelector(`.seg-group[data-key="bi_${key}"]`);
+            if (!grp || !item) return;
             const act = grp.querySelector('.active');
             const hintEl = document.getElementById(`hint_bi_${key}`);
-            if (act && item && hintEl) {
+            if (act && hintEl) {
                 const val = parseInt(act.innerText);
                 hintEl.innerText = item.d[val] || '';
             }
-        }
+        };
+
         window.calcBI = () => {
             let sum = 0;
             biItems.forEach(i => {
@@ -1196,126 +1344,306 @@
                     if (act) sum += parseInt(act.innerText);
                 }
             });
-            const el = document.getElementById('bi_total');
-            if (el) el.innerText = sum;
-
-            // Cat logic
+            const tot = document.getElementById('bi_total');
+            if (tot) tot.innerText = sum;
             let cat = "Complete Independence";
             if (sum <= 20) cat = "Total Dependency";
             else if (sum <= 60) cat = "Severe Dependency";
             else if (sum <= 90) cat = "Moderate Dependency";
             else if (sum <= 99) cat = "Slight Dependency";
-            document.getElementById('bi_cat').innerText = cat;
-
+            const cEl = document.getElementById('bi_cat');
+            if (cEl) cEl.innerText = cat;
             return sum;
+        };
+
+        window.updateGCSSum = () => {
+            const e = document.getElementById('gcs_e');
+            const v = document.getElementById('gcs_v');
+            const m = document.getElementById('gcs_m');
+            if (!e || !v || !m) return;
+            const eVal = parseInt(e.value);
+            const mVal = parseInt(m.value);
+            const vRaw = v.value;
+            let vVal, vDisp;
+            if (['T', 'A', 'E'].includes(vRaw)) {
+                vVal = 1;
+                vDisp = vRaw === 'T' ? 'Vt' : (vRaw === 'A' ? 'Va' : 'Ve');
+            } else {
+                vVal = parseInt(vRaw);
+                vDisp = 'V' + vRaw;
+            }
+            const sum = eVal + vVal + mVal;
+            const disp = document.getElementById('gcs_sum_disp');
+            if (disp) disp.innerText = `GCS: E${eVal}${vDisp}M${mVal} = ${sum}`;
+        };
+
+        // ============ State / Persistence ============
+        function collectAllState() {
+            const state = { mode: currentMode };
+            // All inputs / selects
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                if (el.id) state[el.id] = el.value;
+            });
+            // toggle buttons
+            document.querySelectorAll('.toggle-btn[id]').forEach(el => {
+                state['_t_' + el.id] = el.classList.contains('active');
+            });
+            // seg-group active
+            document.querySelectorAll('.seg-group[data-key]').forEach(grp => {
+                const act = grp.querySelector('.active');
+                if (act) state['_s_' + grp.dataset.key] = act.innerText;
+            });
+            // cycle-btn (ASIA / sensory)
+            document.querySelectorAll('.cycle-btn[id]').forEach(el => {
+                state['_c_' + el.id] = el.innerText;
+            });
+            // calc btns
+            const cg = document.getElementById('calc_btn_group');
+            if (cg) {
+                state['_calc'] = Array.from(cg.querySelectorAll('.calc-btn.active')).map(b => b.innerText);
+            }
+            // bilateral BR
+            const blBtn = document.getElementById('br_bilateral_btn');
+            if (blBtn) state['_br_bilat'] = blBtn.classList.contains('active');
+            return state;
         }
+
+        function restoreState(state) {
+            if (!state) return;
+            Object.keys(state).forEach(k => {
+                if (k === 'mode') return;
+                if (k.startsWith('_t_')) {
+                    const id = k.slice(3);
+                    const btn = document.getElementById(id);
+                    if (btn && btn.classList.contains('toggle-btn')) {
+                        const isActive = state[k];
+                        const name = btn.innerText.split(' (')[0];
+                        if (isActive) { btn.classList.add('active'); btn.innerText = name + ' (+)'; }
+                        else { btn.classList.remove('active'); btn.innerText = name + ' (-)'; }
+                    }
+                } else if (k.startsWith('_s_')) {
+                    const dk = k.slice(3);
+                    const grp = document.querySelector(`.seg-group[data-key="${dk}"]`);
+                    if (grp) {
+                        grp.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+                        grp.querySelectorAll('.seg-btn').forEach(b => {
+                            if (b.innerText === state[k]) b.classList.add('active');
+                        });
+                    }
+                } else if (k.startsWith('_c_')) {
+                    const id = k.slice(3);
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        btn.innerText = state[k];
+                        btn.setAttribute('data-mrc', state[k]);
+                    }
+                } else if (k === '_calc') {
+                    const cg = document.getElementById('calc_btn_group');
+                    if (cg && Array.isArray(state[k])) {
+                        cg.querySelectorAll('.calc-btn').forEach(b => {
+                            if (state[k].includes(b.innerText)) b.classList.add('active');
+                            else b.classList.remove('active');
+                        });
+                    }
+                } else if (k === '_br_bilat') {
+                    if (state[k]) {
+                        const blBtn = document.getElementById('br_bilateral_btn');
+                        const row = document.getElementById('br_bilateral_row');
+                        if (blBtn && !blBtn.classList.contains('active')) {
+                            blBtn.classList.add('active');
+                            blBtn.innerText = 'Bilateral (+)';
+                            row?.classList.remove('hidden');
+                            syncBRSide();
+                        }
+                    }
+                } else {
+                    const el = document.getElementById(k);
+                    if (el && (el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA')) {
+                        el.value = state[k];
+                    }
+                }
+            });
+            biItems.forEach(i => updateBIHint(i.k));
+            calcBI();
+            updateGCSSum();
+            ['jo_judg', 'jo_orient', 'jo_mem_imm_res', 'jo_mem_rec_res', 'jo_mem_lt_res', 'jo_abs_res'].forEach(toggleInputVisibility);
+        }
+
+        function scheduleSave() {
+            clearTimeout(saveTimer);
+            const status = document.getElementById('save_status');
+            if (status) { status.style.color = 'var(--text-light)'; status.innerText = '◌  儲存中…'; }
+            saveTimer = setTimeout(() => {
+                try {
+                    const state = collectAllState();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+                    if (status) { status.style.color = 'var(--ok)'; status.innerText = '●  已儲存'; }
+                } catch (e) {
+                    if (status) { status.style.color = 'var(--warn)'; status.innerText = '✗  儲存失敗'; }
+                }
+            }, STORAGE_DEBOUNCE);
+        }
+
+        function attachAutosaveListeners() {
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                if (!el.dataset.autosave) {
+                    el.addEventListener('input', scheduleSave);
+                    el.addEventListener('change', scheduleSave);
+                    el.dataset.autosave = '1';
+                }
+            });
+        }
+
+        window.loadDraft = () => {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) { showToast('沒有已儲存的草稿'); return; }
+                const state = JSON.parse(raw);
+                if (state.mode && state.mode !== currentMode) {
+                    currentMode = state.mode;
+                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelector(`.mode-btn[data-mode="${state.mode}"]`)?.classList.add('active');
+                    render();
+                }
+                restoreState(state);
+                showToast('草稿已載入');
+            } catch (e) {
+                showToast('載入失敗');
+            }
+        };
+
+        function autoLoadOnStart() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const state = JSON.parse(raw);
+                if (state.mode && state.mode !== currentMode) {
+                    currentMode = state.mode;
+                    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelector(`.mode-btn[data-mode="${state.mode}"]`)?.classList.add('active');
+                    render();
+                }
+                restoreState(state);
+            } catch (e) { /* ignore */ }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 1800);
+        }
+
+        // ============ Output ============
         function getV(id) {
             const el = document.getElementById(id);
             if (!el) return "";
             let val = el.tagName === 'BUTTON' ? el.innerText : el.value;
-            return val.replace(/Up: |Ud: |LL: |S: |D: /g, "");
+            return String(val).replace(/Up: |Ud: |LL: |S: |D: /g, "");
         }
+
         function getSeg(key) {
             const grp = document.querySelector(`.seg-group[data-key="${key}"]`);
             if (!grp) return "";
             const act = grp.querySelector('.active');
             return act ? act.innerText : "";
         }
+
         function getTog(id) {
             const el = document.getElementById(id);
             if (!el) return "(-)";
             return el.classList.contains('active') ? "(+)" : "(-)";
         }
+
+        // visualWidth-aware padding for Chinese/double-width chars
+        function visualWidth(str) {
+            let w = 0;
+            for (const ch of String(str)) {
+                const code = ch.codePointAt(0);
+                if (code > 0x2E80) w += 2; else w += 1;
+            }
+            return w;
+        }
         function pad(str, len) {
-            if (!str) str = "";
-            let s = str;
-            while (s.length < len) s += " ";
-            return s;
+            const s = String(str || "");
+            const w = visualWidth(s);
+            if (w >= len) return s;
+            return s + " ".repeat(len - w);
         }
 
         window.clearData = () => {
-            if (confirm("確定要清空所有資料嗎？")) {
-                render();
-                document.getElementById('pt_name').value = "";
-                document.getElementById('pt_bed').value = "";
-                document.getElementById('addon_tcm').classList.remove('active');
-                document.getElementById('addon_tcm').innerText = "中醫 (-)";
-                document.getElementById('addon_ilib').classList.remove('active');
-                document.getElementById('addon_ilib').innerText = "ILIB (-)";
-                document.getElementById('addon_rtms').classList.remove('active');
-                document.getElementById('addon_rtms').innerText = "rTMS (-)";
-                document.getElementById('addon_doc').value = "";
+            if (!confirm("確定要清空所有資料嗎？已儲存草稿也會被刪除。")) return;
+            localStorage.removeItem(STORAGE_KEY);
+            currentMode = 'CVA';
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.mode-btn[data-mode="CVA"]').classList.add('active');
+            render();
+            document.getElementById('pt_name').value = "";
+            document.getElementById('pt_bed').value = "";
+            document.getElementById('pt_date').value = "";
+            ['addon_tcm', 'addon_ilib', 'addon_rtms'].forEach(id => {
+                const b = document.getElementById(id);
+                b.classList.remove('active');
+                const name = b.innerText.split(' (')[0];
+                b.innerText = name + ' (-)';
+            });
+            document.getElementById('addon_doc').value = "";
+            showToast('已重置');
+        };
 
-                // Reset Sensory
-                if (document.getElementById('sen_pp')) {
-                    document.getElementById('sen_pp').selectedIndex = 0;
-                    document.getElementById('sen_temp').selectedIndex = 0;
-                    document.getElementById('sen_lt').selectedIndex = 0;
-                    document.getElementById('sen_vib').selectedIndex = 0;
-                    document.getElementById('sen_jp').selectedIndex = 0;
-                    document.getElementById('sen_2pd').value = "";
-                    document.getElementById('sen_double').selectedIndex = 0;
-                    document.getElementById('sen_stereo').selectedIndex = 0;
-                    document.getElementById('sen_graph').value = "Intact";
-                    const anal = document.getElementById('sen_anal');
-                    if (anal) { anal.classList.add('active'); anal.innerText = "Anal sensation (+)"; }
-                }
-
-                // Reset SCI Buttons specifically
-                document.querySelectorAll('.cycle-btn').forEach(btn => {
-                    const id = btn.id;
-                    if (id.includes('asia_')) btn.innerText = '5';
-                    if (id.includes('sen_')) btn.innerText = '2';
-                });
-            }
-        }
-
-        // --- Copy Logic ---
         window.copyNote = () => {
             const V = getV;
-            const gcsString = `E${V('gcs_e')}V${V('gcs_v')}M${V('gcs_m')}`;
+            const e = V('gcs_e'), m = V('gcs_m'), vRaw = V('gcs_v');
+            let vDisp = vRaw, vVal;
+            if (vRaw === 'T') { vDisp = 't'; vVal = 1; }
+            else if (vRaw === 'A') { vDisp = 'a'; vVal = 1; }
+            else if (vRaw === 'E') { vDisp = 'e'; vVal = 1; }
+            else { vDisp = vRaw; vVal = parseInt(vRaw); }
+            const gcsSum = parseInt(e) + vVal + parseInt(m);
+            const gcsString = `E${e}V${vDisp}M${m} = ${gcsSum}`;
 
             let t = `=================NEUROLOGICAL EXAM======================\n`;
+            const bed = V('pt_bed'), name = V('pt_name'), date = V('pt_date');
+            if (bed || name || date) {
+                t += `Pt: ${bed} ${name}    Date: ${date}\n`;
+            }
             t += `MENTAL STATUS\n`;
-            t += `Consciousness: Alert,  Glasgow Coma Scale :${gcsString}\n`;
+            t += `Consciousness: Alert,  Glasgow Coma Scale: ${gcsString}\n`;
             t += `${getSeg('hand_side')} handed\n`;
             if (currentMode !== 'SCI') {
                 t += `Language: (FRCN): Fluency:${getTog('lang_fluency')}  Repetition:${getTog('lang_rep')}   Comprehension:${getTog('lang_comp')}  Naming:${getTog('lang_name')}\n`;
                 t += `Speech: Dysarthria${getTog('def_dysarthria')}, Aphasia${getTog('def_aphasia')}, Dysphonia(-)\n`;
-                t += `Swallow:  Dysphagia${getTog('def_dysphagia')}, NG feeding :${getTog('tube_ng')}\n`;
+                t += `Swallow: Dysphagia${getTog('def_dysphagia')}, NG feeding:${getTog('tube_ng')}\n`;
             } else {
                 t += `Speech: Dysarthria${getTog('def_dysarthria')}, Dysphagia${getTog('def_dysphagia')}\n`;
             }
+            const pain = V('pain_nrs').trim();
+            if (pain) t += `Pain (NRS): ${pain}\n`;
 
             t += `================================================================\n`;
             if (currentMode !== 'SCI') {
-                // JOMAC
                 const jo = (id, inputId) => {
                     const val = V(id);
                     if (val === 'Impaired') return 'Impaired';
-                    const txt = V(inputId);
                     if (id === 'jo_judg' || id === 'jo_orient') return val;
-                    return `${val} : ${txt}`;
-                }
-
-                // Calc string
+                    return `${val}: ${V(inputId)}`;
+                };
                 const getCalcStr = () => {
                     const status = V('jo_calc_res');
                     const group = document.getElementById('calc_btn_group');
                     if (!group) return status;
                     const actives = Array.from(group.querySelectorAll('.active')).map(b => b.innerText);
-                    if (actives.length === 0) return status + '; (100)';
+                    if (actives.length === 0) return `${status}; (100)`;
                     actives.sort((a, b) => b - a);
                     return `${status}; (100->${actives.join('->')})`;
                 };
-
                 t += `JOMAC:\n`;
                 t += `  Judgement: ${jo('jo_judg', '')}\n`;
                 t += `  Orientation: ${jo('jo_orient', '')}\n`;
                 t += `  Memory:\n`;
-                t += `  Immediate recall:  ${jo('jo_mem_imm_res', 'jo_mem_imm_cont')}\n`;
-                t += `                 Recent memory: ${jo('jo_mem_rec_res', 'jo_mem_rec_cont')}\n`;
-                t += `                 Long term memory: ${jo('jo_mem_lt_res', 'jo_mem_lt_cont')}\n`;
+                t += `    Immediate: ${jo('jo_mem_imm_res', 'jo_mem_imm_cont')}\n`;
+                t += `    Recent: ${jo('jo_mem_rec_res', 'jo_mem_rec_cont')}\n`;
+                t += `    Long term: ${jo('jo_mem_lt_res', 'jo_mem_lt_cont')}\n`;
                 t += `  Abstract thinking: ${jo('jo_abs_res', 'jo_abs_cont')}\n`;
                 t += `  Calculation: ${getCalcStr()}\n`;
                 t += `================================================================\n`;
@@ -1340,21 +1668,21 @@
                     let otherSide = V('br_side') === 'Right' ? 'Left' : 'Right';
                     t += `                   ${otherSide}:  ${V('br_o_up')} / ${V('br_o_ud')} / ${V('br_o_ll')}\n`;
                 }
-                t += `Modified Rankin Scale:  ${V('mrs_val')}\n`;
-                t += ` Muscle appearance: Atrophy${getTog('mus_atrophy')}, Fasciculation${getTog('mus_fasc')}\n`;
-                t += ` M.P.:(0-5)            R't          L't       \n`;
-                t += ` Upper    Proximal     ${pad(V('mp_up_r'), 12)}${V('mp_up_l')}\n`;
-                t += `          Distal       ${pad(V('mp_ud_r'), 12)}${V('mp_ud_l')}\n`;
-                t += ` Lower    Proximal     ${pad(V('mp_lp_r'), 12)}${V('mp_lp_l')}\n`;
-                t += `          Distal       ${pad(V('mp_ld_r'), 12)}${V('mp_ld_l')}\n`;
-                t += ` DTR: (0-++++)         R't          L't\n`;
-                t += `      Biceps reflex    ${pad(V('dtr_biceps_r'), 12)}${V('dtr_biceps_l')}\n`;
-                t += `      Triceps          ${pad(V('dtr_triceps_r'), 12)}${V('dtr_triceps_l')}\n`;
-                t += `      Brachioradialis  ${pad(V('dtr_brach_r'), 12)}${V('dtr_brach_l')}\n`;
-                t += `      Knee jerk        ${pad(V('dtr_knee_r'), 12)}${V('dtr_knee_l')}\n`;
-                t += `      Ankle jerk       ${pad(V('dtr_ankle_r'), 12)}${V('dtr_ankle_l')}\n`;
-                t += ` Babinski's sign: ${V('bab_r')} / ${V('bab_l')}\n`;
-                t += ` Hoffman's sign: ${V('hof_r')} / ${V('hof_l')}\n`;
+                t += `Modified Rankin Scale: ${V('mrs_val')}\n`;
+                t += `Muscle appearance: Atrophy${getTog('mus_atrophy')}, Fasciculation${getTog('mus_fasc')}\n`;
+                t += `M.P. (0-5)            R't        L't\n`;
+                t += `  Upper Proximal      ${pad(V('mp_up_r'), 11)}${V('mp_up_l')}\n`;
+                t += `        Distal        ${pad(V('mp_ud_r'), 11)}${V('mp_ud_l')}\n`;
+                t += `  Lower Proximal      ${pad(V('mp_lp_r'), 11)}${V('mp_lp_l')}\n`;
+                t += `        Distal        ${pad(V('mp_ld_r'), 11)}${V('mp_ld_l')}\n`;
+                t += `DTR (0-++++)          R't        L't\n`;
+                t += `  Biceps              ${pad(V('dtr_biceps_r'), 11)}${V('dtr_biceps_l')}\n`;
+                t += `  Triceps             ${pad(V('dtr_triceps_r'), 11)}${V('dtr_triceps_l')}\n`;
+                t += `  Brachioradialis     ${pad(V('dtr_brach_r'), 11)}${V('dtr_brach_l')}\n`;
+                t += `  Knee                ${pad(V('dtr_knee_r'), 11)}${V('dtr_knee_l')}\n`;
+                t += `  Ankle               ${pad(V('dtr_ankle_r'), 11)}${V('dtr_ankle_l')}\n`;
+                t += `Babinski's sign: ${V('bab_r')} / ${V('bab_l')}\n`;
+                t += `Hoffman's sign: ${V('hof_r')} / ${V('hof_l')}\n`;
                 t += `================================================================\n`;
                 t += getMASBlock();
             }
@@ -1362,45 +1690,49 @@
                 t += `American Spinal Injury Association Impairment Scale: Grade ${V('asia_grade')}\n`;
                 t += `Neurological level of injury: ${V('sci_nli')}\n`;
                 t += `Motor Level: Right ${V('sci_ml_r')} / Left ${V('sci_ml_l')}\n`;
-                t += `  Right                            Left            \n`;
-                const AR = (lvl, name) => `     ${pad(V('asia_r_' + lvl), 6)} ${pad(lvl + '(' + name + ')', 25)} ${V('asia_l_' + lvl)}\n`;
+                t += `   Right                                Left\n`;
+                const AR = (lvl, name) => `   ${pad(V('asia_r_' + lvl), 6)} ${pad(lvl + ' (' + name + ')', 28)} ${V('asia_l_' + lvl)}\n`;
                 t += AR('C5', 'Elbow flexors');
                 t += AR('C6', 'Wrist Extensors');
                 t += AR('C7', 'Elbow extensors');
                 t += AR('C8', 'Finger Flexors');
                 t += AR('T1', 'Finger abductors');
-                t += `            ~~\n`;
+                t += `   ----------------------------- ~~ -----------------------------\n`;
                 t += AR('L2', 'Hip flexors');
                 t += AR('L3', 'Knee extensors');
                 t += AR('L4', 'Ankle dorsiflexors');
                 t += AR('L5', 'Long toe extensors');
                 t += AR('S1', 'Ankle plantar flexors');
+                if (V('sci_zpp_r') || V('sci_zpp_l')) {
+                    t += `ZPP (motor/sensory): R: ${V('sci_zpp_r')} / L: ${V('sci_zpp_l')}\n`;
+                }
                 t += `================================================================\n`;
-                t += `Deep tendon reflex: (0-4+)\n`;
-                t += `Biceps reflex         ${pad(V('dtr_biceps_r'), 6)}${V('dtr_biceps_l')}\n`;
-                t += `Triceps reflex        ${pad(V('dtr_triceps_r'), 6)}${V('dtr_triceps_l')}\n`;
-                t += `Brachioradialis       ${pad(V('dtr_brach_r'), 6)}${V('dtr_brach_l')}\n`;
-                t += `Knee jerk             ${pad(V('dtr_knee_r'), 6)}${V('dtr_knee_l')}\n`;
-                t += `Ankle jerk            ${pad(V('dtr_ankle_r'), 6)}${V('dtr_ankle_l')}\n`;
+                t += `Deep tendon reflex:\n`;
+                t += `  Biceps          ${pad(V('dtr_biceps_r'), 6)} ${V('dtr_biceps_l')}\n`;
+                t += `  Triceps         ${pad(V('dtr_triceps_r'), 6)} ${V('dtr_triceps_l')}\n`;
+                t += `  Brachioradialis ${pad(V('dtr_brach_r'), 6)} ${V('dtr_brach_l')}\n`;
+                t += `  Knee jerk       ${pad(V('dtr_knee_r'), 6)} ${V('dtr_knee_l')}\n`;
+                t += `  Ankle jerk      ${pad(V('dtr_ankle_r'), 6)} ${V('dtr_ankle_l')}\n`;
                 t += `Anal tone: ${V('sci_anal_tone')}\n`;
                 t += `Bulbocavernosus reflex: ${V('sci_bcr')}\n`;
+                t += `VAC: ${V('sci_vac')} / DAP: ${V('sci_dap')}\n`;
             }
             else if (currentMode === 'TBI') {
                 t += `Rancho Los Amigos Scale: ${V('rancho_val')}\n`;
                 t += `Muscle appearance: Atrophy${getTog('mus_atrophy')}, Fasciculation${getTog('mus_fasc')}\n`;
-                t += `- Muscle power:        Right    Left\n`;
-                t += `      Upper Proximal   ${pad(V('mp_up_r'), 9)}${V('mp_up_l')}\n`;
-                t += `            Distal     ${pad(V('mp_ud_r'), 9)}${V('mp_ud_l')}\n`;
-                t += `      Lower Proximal   ${pad(V('mp_lp_r'), 9)}${V('mp_lp_l')}\n`;
-                t += `            Distal     ${pad(V('mp_ld_r'), 9)}${V('mp_ld_l')}\n`;
-                t += `-Deep tendon reflex  Right    Left\n`;
-                t += `       Biceps            ${pad(V('dtr_biceps_r'), 7)}${V('dtr_biceps_l')}\n`;
-                t += `       Triceps           ${pad(V('dtr_triceps_r'), 7)}${V('dtr_triceps_l')}\n`;
-                t += `       Brachioradialis   ${pad(V('dtr_brach_r'), 7)}${V('dtr_brach_l')}\n`;
-                t += `       Knee              ${pad(V('dtr_knee_r'), 7)}${V('dtr_knee_l')}\n`;
-                t += `       Ankle             ${pad(V('dtr_ankle_r'), 7)}${V('dtr_ankle_l')}\n`;
-                t += ` Babinski's sign:       ${pad(V('bab_r'), 9)}${V('bab_l')}\n`;
-                t += ` Hoffman's sign:        ${pad(V('hof_r'), 9)}${V('hof_l')}\n`;
+                t += `Muscle power:        Right    Left\n`;
+                t += `  Upper Proximal     ${pad(V('mp_up_r'), 9)}${V('mp_up_l')}\n`;
+                t += `        Distal       ${pad(V('mp_ud_r'), 9)}${V('mp_ud_l')}\n`;
+                t += `  Lower Proximal     ${pad(V('mp_lp_r'), 9)}${V('mp_lp_l')}\n`;
+                t += `        Distal       ${pad(V('mp_ld_r'), 9)}${V('mp_ld_l')}\n`;
+                t += `Deep tendon reflex   Right    Left\n`;
+                t += `  Biceps             ${pad(V('dtr_biceps_r'), 9)}${V('dtr_biceps_l')}\n`;
+                t += `  Triceps            ${pad(V('dtr_triceps_r'), 9)}${V('dtr_triceps_l')}\n`;
+                t += `  Brachioradialis    ${pad(V('dtr_brach_r'), 9)}${V('dtr_brach_l')}\n`;
+                t += `  Knee               ${pad(V('dtr_knee_r'), 9)}${V('dtr_knee_l')}\n`;
+                t += `  Ankle              ${pad(V('dtr_ankle_r'), 9)}${V('dtr_ankle_l')}\n`;
+                t += `Babinski's sign:     ${pad(V('bab_r'), 9)}${V('bab_l')}\n`;
+                t += `Hoffman's sign:      ${pad(V('hof_r'), 9)}${V('hof_l')}\n`;
                 t += `================================================================\n`;
                 t += getMASBlock();
             }
@@ -1409,12 +1741,12 @@
             if (currentMode === 'SCI') {
                 t += `SENSORY FUNCTION\n`;
                 t += `Sensory Level: Right ${V('sci_sl_r')} / Left ${V('sci_sl_l')}\n`;
-                t += `Sensory status : \n`;
-                t += `    Light touch           Pin-prick        \n`;
-                t += `    R't    L't           R't     L't    \n`;
+                t += `Sensory status:\n`;
+                t += `         Light touch         Pin-prick\n`;
+                t += `         R't    L't          R't    L't\n`;
                 const lvls = ['C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'T1', 'T4', 'T10', 'T12', 'L1', 'L2', 'L3', 'L4', 'L5', 'S1', 'S2', 'S3'];
                 lvls.forEach(l => {
-                    t += `    ${pad(V('sen_r_lt_' + l), 7)}${pad(V('sen_l_lt_' + l), 7)} ${pad(l, 6)} ${pad(V('sen_r_pp_' + l), 8)}${V('sen_l_pp_' + l)}\n`;
+                    t += `  ${pad(l, 5)}  ${pad(V('sen_r_lt_' + l), 7)}${pad(V('sen_l_lt_' + l), 9)}${pad(V('sen_r_pp_' + l), 7)}${V('sen_l_pp_' + l)}\n`;
                 });
                 t += `\n${V('sensory_note')}\n`;
             } else {
@@ -1426,7 +1758,7 @@
                 s += `    Light touch: ${V('sen_lt')}\n`;
                 s += `    Vibration: ${V('sen_vib')}\n`;
                 s += `    Joint position: ${V('sen_jp')}\n`;
-                s += `   Two-point discrimination test: ${V('sen_2pd')}\n`;
+                if (V('sen_2pd')) s += `   Two-point discrimination: ${V('sen_2pd')}\n`;
                 s += `   Double stimulation test: ${V('sen_double')}\n`;
                 s += `   Stereognosis: ${V('sen_stereo')}\n`;
                 s += `   Graphesthesia: ${V('sen_graph')}\n`;
@@ -1436,13 +1768,12 @@
 
             t += `================================================================\n`;
             t += `COORDINATION AND GAIT\n`;
-            t += `Coordination:\n`;
-            t += `Tremor--> ${V('co_trem_rest')}, ${V('co_trem_act')}\n`;
-            t += `                                Right           Left\n`;
-            t += `FNF (finger-nose-finger) :  ${pad(V('co_fnf_r'), 16)}${V('co_fnf_l')}\n`;
-            t += `HKS (heel-knee-shin)     :  ${pad(V('co_hks_r'), 16)}${V('co_hks_l')}\n`;
-            t += `Rapid alternating movement: ${pad(V('co_ram_r'), 20)} ${V('co_ram_l')}\n`;
-            t += `Romberg  test:  ${V('co_romberg')}, ${V('co_trunk')}\n`;
+            t += `Tremor: ${V('co_trem_rest')}, ${V('co_trem_act')}\n`;
+            t += `                           Right                Left\n`;
+            t += `  FNF                      ${pad(V('co_fnf_r'), 21)}${V('co_fnf_l')}\n`;
+            t += `  HKS                      ${pad(V('co_hks_r'), 21)}${V('co_hks_l')}\n`;
+            t += `  Rapid alt. movement      ${pad(V('co_ram_r'), 21)}${V('co_ram_l')}\n`;
+            t += `Romberg test: ${V('co_romberg')}, ${V('co_trunk')}\n`;
             t += `Tandem gait: ${V('co_tandem')}\n`;
             t += `Gait: ${V('co_gait')}, ${V('co_bal')}\n`;
             t += `================================================================\n`;
@@ -1450,13 +1781,13 @@
 
             t += `================================================================\n`;
             t += `Functional status:\n`;
-            t += `- Rolling to L't: ${V('func_roll_l')} to R't: ${V('func_roll_r')}\n`;
+            t += `- Rolling to L't: ${V('func_roll_l')} / R't: ${V('func_roll_r')}\n`;
             t += `- Sitting up: ${V('func_sit')}\n`;
             t += `- Transfer: ${V('func_trans')}\n`;
             t += `- Standing up: ${V('func_stand')}\n`;
-            t += `- Balance              Static              Dynamic          \n`;
-            t += `        Sitting        ${pad(V('bal_sit_s'), 19)} ${V('bal_sit_d')}\n`;
-            t += `        Standing       ${pad(V('bal_stand_s'), 19)} ${V('bal_stand_d')}\n`;
+            t += `- Balance              Static              Dynamic\n`;
+            t += `    Sitting            ${pad(V('bal_sit_s'), 20)}${V('bal_sit_d')}\n`;
+            t += `    Standing           ${pad(V('bal_stand_s'), 20)}${V('bal_stand_d')}\n`;
 
             t += `================================================================\n`;
             const biSum = calcBI();
@@ -1465,39 +1796,75 @@
             else if (biSum <= 60) cat = "Severe Dependency";
             else if (biSum <= 90) cat = "Moderate Dependency";
             else if (biSum <= 99) cat = "Slight Dependency";
-
-            t += `BARTHEL INDEX \n`;
-            t += ` Feeding  ${getSeg('bi_feed')}/10   Grooming ${getSeg('bi_groom')}/5    Dressing ${getSeg('bi_dress')}/10    Bathing  ${getSeg('bi_bath')}/5    \n`;
-            t += ` Toilet   ${getSeg('bi_toilet')}/10   Bowel    ${getSeg('bi_bowel')}/10    Bladder  ${getSeg('bi_blad')}/10    Walking  ${getSeg('bi_walk')}/15    \n`;
-            t += ` Transfer ${getSeg('bi_trans')}/15   Stairs   ${getSeg('bi_stair')}/10                          \n`;
-            t += ` Total: ${biSum}  ==> ${cat}\n`;
+            t += `BARTHEL INDEX\n`;
+            t += `  Feeding  ${getSeg('bi_feed')}/10   Grooming ${getSeg('bi_groom')}/5    Dressing ${getSeg('bi_dress')}/10   Bathing  ${getSeg('bi_bath')}/5\n`;
+            t += `  Toilet   ${getSeg('bi_toilet')}/10   Bowel    ${getSeg('bi_bowel')}/10   Bladder  ${getSeg('bi_blad')}/10   Walking  ${getSeg('bi_walk')}/15\n`;
+            t += `  Transfer ${getSeg('bi_trans')}/15   Stairs   ${getSeg('bi_stair')}/10\n`;
+            t += `  Total: ${biSum}  ==> ${cat}\n`;
             t += `================================================================\n`;
-            t += `Local finding: NG${getTog('tube_ng')}, Foley${getTog('tube_foley')}, Tracheostomy ${getTog('tube_tracho')}\n`;
-            t += `${V('local_note')}\n`;
+            t += `Local finding: NG${getTog('tube_ng')}, Foley${getTog('tube_foley')}, Tracheostomy${getTog('tube_tracho')}\n`;
+            const localNote = V('local_note').trim();
+            if (localNote) t += `${localNote}\n`;
 
-            // Add-on Section
             t += `================================================================\n`;
             const doc = V('addon_doc').trim();
-            t += `中醫: ${getTog('addon_tcm')}; 指定醫師: ${doc ? doc : 'None'}; ILIB: ${getTog('addon_ilib')}; rTMS: ${getTog('addon_rtms')}\n`;
+            t += `中醫: ${getTog('addon_tcm')}; 指定醫師: ${doc || 'None'}; ILIB: ${getTog('addon_ilib')}; rTMS: ${getTog('addon_rtms')}\n`;
 
-            navigator.clipboard.writeText(t).then(() => {
+            // Copy with fallback
+            const doCopy = () => {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    return navigator.clipboard.writeText(t);
+                }
+                // Fallback
+                const ta = document.createElement('textarea');
+                ta.value = t;
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                return Promise.resolve();
+            };
+
+            doCopy().then(() => {
+                if (navigator.vibrate) navigator.vibrate(30);
                 const btn = document.querySelector('.btn-copy');
                 const old = btn.innerText;
                 btn.innerText = "✅ 已複製！";
                 btn.style.background = "#2e7d32";
-                setTimeout(() => {
-                    btn.innerText = old;
-                    btn.style.background = "";
-                }, 2000);
+                setTimeout(() => { btn.innerText = old; btn.style.background = ""; }, 1800);
+            }).catch(() => {
+                showToast('複製失敗，請手動選取');
             });
-        }
+        };
 
+        // ============ Boot ============
         window.onload = () => {
             render();
-            // Select text on focus for easier editing
+            autoLoadOnStart();
+            // Date default
+            const dateEl = document.getElementById('pt_date');
+            if (dateEl && !dateEl.value) {
+                const d = new Date();
+                dateEl.value = `${d.getFullYear()}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
+            }
+            // Pt info auto-save
+            ['pt_bed', 'pt_name', 'pt_date', 'addon_doc'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.addEventListener('input', scheduleSave); }
+            });
+            // Select text on focus
             document.body.addEventListener('focusin', (e) => {
                 if (e.target.tagName === 'INPUT' && e.target.type === 'text') {
                     e.target.select();
+                }
+            });
+            // Warn before leaving with unsaved changes
+            window.addEventListener('beforeunload', (e) => {
+                const status = document.getElementById('save_status');
+                if (status && status.innerText.includes('儲存中')) {
+                    e.preventDefault();
+                    e.returnValue = '';
                 }
             });
         };
